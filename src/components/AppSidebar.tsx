@@ -1,4 +1,4 @@
-import { Home, User, LogOut, TicketIcon } from "lucide-react";
+import { Home, User, LogOut, TicketIcon, Globe, MessageCircle } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -13,8 +13,13 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const items = [
-  { title: "Home", url: "/support", icon: Home },
+const navigationItems = [
+  { title: "Home", url: "/support", icon: Home, isExternal: false },
+];
+
+const externalItems = [
+  { title: "Dashboard", url: "https://dash.hothost.org/", icon: Globe },
+  { title: "Discord", url: "https://discord.gg/auwYgPaadT", icon: MessageCircle },
 ];
 
 export function AppSidebar() {
@@ -47,7 +52,7 @@ export function AppSidebar() {
         <SidebarGroup className="mt-4">
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2 px-3">
-              {items.map((item) => (
+              {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
@@ -67,6 +72,24 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+
+              <div className="pt-2 mt-2 border-t border-white/10">
+                {externalItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 glass hover:glass-strong text-sidebar-foreground hover:translate-x-1"
+                      >
+                        <item.icon className="h-5 w-5 flex-shrink-0" />
+                        {!collapsed && <span className="font-medium">{item.title}</span>}
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </div>
 
               <div className="pt-4 mt-4 border-t border-white/10">
                 <SidebarMenuItem>
