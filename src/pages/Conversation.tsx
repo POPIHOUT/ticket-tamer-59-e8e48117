@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { UserProfileDialog } from "@/components/UserProfileDialog";
 import {
   Select,
   SelectContent,
@@ -57,6 +58,8 @@ const Conversation = () => {
   const [isSending, setIsSending] = useState(false);
   const [isSupport, setIsSupport] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -342,7 +345,7 @@ const Conversation = () => {
               ) : (
                 messages.map((message) => {
                   const isCurrentUser = message.user_id === user?.id;
-                  const isSupport = message.profiles?.is_support;
+                  const isSupportMessage = message.profiles?.is_support;
 
                   return (
                     <div
@@ -350,31 +353,62 @@ const Conversation = () => {
                       className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}
                     >
                       <div
-                        className={`max-w-[70%] rounded-lg px-4 py-2 ${
+                        className={`max-w-[70%] rounded-lg px-4 py-3 ${
                           isCurrentUser
                             ? "bg-primary text-primary-foreground"
-                            : isSupport
-                            ? "bg-secondary text-secondary-foreground"
-                            : "bg-muted"
+                            : "bg-card border"
                         }`}
                       >
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-medium">
-                            {message.profiles?.nickname || "Unknown"}
-                          </span>
-                          {isSupport && (
-                            <Badge variant="outline" className="text-xs px-1 py-0">
-                              Support
-                            </Badge>
-                          )}
+                        <div className="flex items-start gap-2 mb-2">
+                          <div className="flex-1">
+                            {isSupportMessage && (
+                              <div className="flex items-center gap-2 mb-1">
+                                <Badge variant="default" className="text-xs">
+                                  Podpora
+                                </Badge>
+                                <button
+                                  onClick={() => {
+                                    if (isSupport || isAdmin) {
+                                      setSelectedUserId(message.user_id);
+                                      setIsProfileDialogOpen(true);
+                                    }
+                                  }}
+                                  className={`text-xs font-medium ${
+                                    isSupport || isAdmin
+                                      ? "hover:underline cursor-pointer"
+                                      : ""
+                                  }`}
+                                >
+                                  {message.profiles?.nickname || "Unknown"}
+                                </button>
+                              </div>
+                            )}
+                            {!isSupportMessage && (
+                              <button
+                                onClick={() => {
+                                  if (isSupport || isAdmin) {
+                                    setSelectedUserId(message.user_id);
+                                    setIsProfileDialogOpen(true);
+                                  }
+                                }}
+                                className={`text-xs font-medium mb-1 block ${
+                                  isSupport || isAdmin
+                                    ? "hover:underline cursor-pointer"
+                                    : ""
+                                }`}
+                              >
+                                {message.profiles?.nickname || "Unknown"}
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-xs opacity-70">
+                            {format(new Date(message.created_at), "HH:mm", {
+                              locale: enUS,
+                            })}
+                          </p>
                         </div>
                         <p className="text-sm whitespace-pre-wrap">
                           {message.message}
-                        </p>
-                        <p className="text-xs opacity-70 mt-1">
-                          {format(new Date(message.created_at), "HH:mm", {
-                            locale: enUS,
-                          })}
                         </p>
                       </div>
                     </div>
@@ -462,6 +496,12 @@ const Conversation = () => {
           </Card>
         )}
       </main>
+
+      <UserProfileDialog
+        userId={selectedUserId}
+        open={isProfileDialogOpen}
+        onOpenChange={setIsProfileDialogOpen}
+      />
     </div>
   );
 };
