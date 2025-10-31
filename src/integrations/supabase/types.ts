@@ -95,6 +95,7 @@ export type Database = {
           created_at: string | null
           description: string
           id: string
+          initial_message: string | null
           priority: string | null
           status: string | null
           title: string
@@ -106,6 +107,7 @@ export type Database = {
           created_at?: string | null
           description: string
           id?: string
+          initial_message?: string | null
           priority?: string | null
           status?: string | null
           title: string
@@ -117,6 +119,7 @@ export type Database = {
           created_at?: string | null
           description?: string
           id?: string
+          initial_message?: string | null
           priority?: string | null
           status?: string | null
           title?: string

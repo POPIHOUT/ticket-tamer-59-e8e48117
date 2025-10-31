@@ -38,6 +38,7 @@ export const CreateTicketDialog = ({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("medium");
+  const [initialMessage, setInitialMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,16 +53,31 @@ export const CreateTicketDialog = ({
           description,
           priority,
           status: "open",
+          initial_message: initialMessage.trim() || null,
         })
         .select()
         .single();
 
       if (error) throw error;
 
+      // If there's an initial message, send it
+      if (data && initialMessage.trim()) {
+        const { error: messageError } = await supabase.from("messages").insert({
+          ticket_id: data.id,
+          user_id: userId,
+          message: initialMessage.trim(),
+        });
+
+        if (messageError) {
+          console.error("Error sending initial message:", messageError);
+        }
+      }
+
       toast.success("Ticket created!");
       setTitle("");
       setDescription("");
       setPriority("medium");
+      setInitialMessage("");
       onOpenChange(false);
       
       if (data && onTicketCreated) {
@@ -121,7 +137,19 @@ export const CreateTicketDialog = ({
               onChange={(e) => setDescription(e.target.value)}
               required
               disabled={isLoading}
-              rows={6}
+              rows={4}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="initialMessage">Initial Message (Optional)</Label>
+            <Textarea
+              id="initialMessage"
+              placeholder="Add your first message here..."
+              value={initialMessage}
+              onChange={(e) => setInitialMessage(e.target.value)}
+              disabled={isLoading}
+              rows={3}
             />
           </div>
 

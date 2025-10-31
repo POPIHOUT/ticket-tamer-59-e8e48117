@@ -6,6 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ArrowLeft, Send, Loader2 } from "lucide-react";
 import { format } from "date-fns";
@@ -47,6 +55,8 @@ const Conversation = () => {
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [isSupport, setIsSupport] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -56,6 +66,18 @@ const Conversation = () => {
         return;
       }
       setUser(user);
+
+      // Fetch user role
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_support, is_admin")
+        .eq("id", user.id)
+        .single();
+
+      if (profile) {
+        setIsSupport(profile.is_support || false);
+        setIsAdmin(profile.is_admin || false);
+      }
     };
     getUser();
   }, [navigate]);
@@ -154,11 +176,38 @@ const Conversation = () => {
       if (error) throw error;
 
       setNewMessage("");
+      
+      // Refresh ticket to see updated status if it was closed
+      fetchTicket();
     } catch (error: any) {
       toast.error("Error sending message");
       console.error(error);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!isSupport && !isAdmin) return;
+
+    try {
+      const updates: any = { status: newStatus };
+      if (newStatus === "closed") {
+        updates.closed_at = new Date().toISOString();
+      }
+
+      const { error } = await supabase
+        .from("tickets")
+        .update(updates)
+        .eq("id", ticketId);
+
+      if (error) throw error;
+
+      toast.success("Status updated");
+      fetchTicket();
+    } catch (error: any) {
+      toast.error("Error updating status");
+      console.error(error);
     }
   };
 
@@ -223,7 +272,23 @@ const Conversation = () => {
             <div className="flex-1">
               <h1 className="text-xl font-bold">{ticket.title}</h1>
               <div className="flex items-center gap-2 mt-1">
-                {getStatusBadge(ticket.status)}
+                {(isSupport || isAdmin) ? (
+                  <Select
+                    value={ticket.status}
+                    onValueChange={handleStatusChange}
+                  >
+                    <SelectTrigger className="w-[150px] h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="open">Open</SelectItem>
+                      <SelectItem value="in_progress">In Progress</SelectItem>
+                      <SelectItem value="closed">Closed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  getStatusBadge(ticket.status)
+                )}
                 {getPriorityBadge(ticket.priority)}
               </div>
             </div>
@@ -343,6 +408,44 @@ const Conversation = () => {
               </form>
               <p className="text-xs text-muted-foreground mt-2">
                 Press Enter to send, Shift+Enter for new line
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {ticket.status === "closed" && (
+          <Card>
+            <CardContent className="pt-6">
+              <form onSubmit={handleSendMessage} className="flex gap-2">
+                <Textarea
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Type your message to reopen this ticket..."
+                  disabled={isSending}
+                  rows={3}
+                  className="flex-1"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage(e);
+                    }
+                  }}
+                />
+                <Button
+                  type="submit"
+                  disabled={isSending || !newMessage.trim()}
+                  size="icon"
+                  className="self-end"
+                >
+                  {isSending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              </form>
+              <p className="text-xs text-muted-foreground mt-2">
+                Sending a message will reopen this ticket. Press Enter to send, Shift+Enter for new line
               </p>
             </CardContent>
           </Card>
