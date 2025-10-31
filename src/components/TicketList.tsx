@@ -81,9 +81,11 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "open":
-        return <AlertCircle className="h-4 w-4" />;
+        return <CheckCircle2 className="h-4 w-4" />;
       case "in_progress":
         return <Clock className="h-4 w-4" />;
+      case "waiting_for_response":
+        return <AlertCircle className="h-4 w-4" />;
       case "closed":
         return <CheckCircle2 className="h-4 w-4" />;
       default:
@@ -91,14 +93,16 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
     }
   };
 
-  const getStatusVariant = (status: string) => {
+  const getStatusVariant = (status: string): "default" | "destructive" | "secondary" | "outline" => {
     switch (status) {
       case "open":
-        return "destructive";
+        return "default"; // Will use success color
       case "in_progress":
-        return "default";
-      case "closed":
         return "secondary";
+      case "waiting_for_response":
+        return "outline"; // Will use warning color
+      case "closed":
+        return "destructive";
       default:
         return "outline";
     }
@@ -139,9 +143,19 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
             </CardDescription>
           </div>
           <div className="flex flex-col gap-2">
-            <Badge variant={getStatusVariant(ticket.status)} className="gap-1">
+            <Badge 
+              variant={getStatusVariant(ticket.status)} 
+              className={`gap-1 ${
+                ticket.status === "open" ? "bg-success text-success-foreground hover:bg-success/90" :
+                ticket.status === "waiting_for_response" ? "bg-warning text-warning-foreground hover:bg-warning/90 border-0" :
+                ""
+              }`}
+            >
               {getStatusIcon(ticket.status)}
-              {ticket.status === "open" ? "Open" : ticket.status === "in_progress" ? "In Progress" : "Closed"}
+              {ticket.status === "open" ? "Open" : 
+               ticket.status === "in_progress" ? "In Progress" : 
+               ticket.status === "waiting_for_response" ? "Waiting for Response" : 
+               "Closed"}
             </Badge>
             <Badge variant={getPriorityVariant(ticket.priority)}>
               {ticket.priority === "urgent" ? "Urgent" : ticket.priority === "high" ? "High" : ticket.priority === "medium" ? "Medium" : "Low"}
@@ -173,10 +187,13 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
   return (
     <>
       <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-6">
+        <TabsList className="grid w-full grid-cols-5 mb-6">
           <TabsTrigger value="all">All ({tickets.length})</TabsTrigger>
           <TabsTrigger value="open">
             Open ({filterTickets("open").length})
+          </TabsTrigger>
+          <TabsTrigger value="waiting_for_response">
+            Waiting ({filterTickets("waiting_for_response").length})
           </TabsTrigger>
           <TabsTrigger value="in_progress">
             In Progress ({filterTickets("in_progress").length})
@@ -207,6 +224,18 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
             </Card>
           ) : (
             filterTickets("open").map(renderTicketCard)
+          )}
+        </TabsContent>
+
+        <TabsContent value="waiting_for_response" className="space-y-4">
+          {filterTickets("waiting_for_response").length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                No tickets waiting for response
+              </CardContent>
+            </Card>
+          ) : (
+            filterTickets("waiting_for_response").map(renderTicketCard)
           )}
         </TabsContent>
 

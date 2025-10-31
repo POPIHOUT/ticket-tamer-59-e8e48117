@@ -42,6 +42,9 @@ All colors MUST be HSL.
     --warning: 35 90% 55%;
     --warning-foreground: 0 0% 100%;
 
+    --info: 200 95% 45%;
+    --info-foreground: 0 0% 100%;
+
     --radius: 0.75rem;
 
     --sidebar-background: 215 30% 15%;
@@ -88,6 +91,9 @@ All colors MUST be HSL.
 
     --warning: 35 90% 60%;
     --warning-foreground: 0 0% 100%;
+
+    --info: 200 95% 50%;
+    --info-foreground: 0 0% 100%;
 
     --sidebar-background: 215 30% 15%;
     --sidebar-foreground: 210 15% 85%;

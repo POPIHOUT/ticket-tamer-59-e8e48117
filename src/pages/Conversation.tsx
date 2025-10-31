@@ -212,18 +212,28 @@ const Conversation = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants = {
-      open: "destructive",
-      in_progress: "default",
-      closed: "secondary",
+    const getBadgeClass = () => {
+      switch (status) {
+        case "open":
+          return "bg-success text-success-foreground hover:bg-success/90";
+        case "waiting_for_response":
+          return "bg-warning text-warning-foreground hover:bg-warning/90";
+        case "closed":
+          return "bg-destructive text-destructive-foreground hover:bg-destructive/90";
+        default:
+          return "";
+      }
     };
+
     const labels = {
       open: "Open",
       in_progress: "In Progress",
+      waiting_for_response: "Waiting for Response",
       closed: "Closed",
     };
+
     return (
-      <Badge variant={variants[status as keyof typeof variants] as any}>
+      <Badge className={getBadgeClass()}>
         {labels[status as keyof typeof labels]}
       </Badge>
     );
@@ -283,6 +293,7 @@ const Conversation = () => {
                     <SelectContent>
                       <SelectItem value="open">Open</SelectItem>
                       <SelectItem value="in_progress">In Progress</SelectItem>
+                      <SelectItem value="waiting_for_response">Waiting for Response</SelectItem>
                       <SelectItem value="closed">Closed</SelectItem>
                     </SelectContent>
                   </Select>
