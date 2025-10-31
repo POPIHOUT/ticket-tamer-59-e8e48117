@@ -297,54 +297,50 @@ const Conversation = () => {
 
   if (!ticket) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/5 to-accent/10">
+      <div className="flex items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/5 to-accent/10">
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={() => navigate("/support")}
-              variant="ghost"
-              size="icon"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-xl font-bold">{ticket.title}</h1>
-              <div className="flex items-center gap-2 mt-1">
-                {(isSupport || isAdmin) ? (
-                  <Select
-                    value={ticket.status}
-                    onValueChange={handleStatusChange}
-                  >
-                    <SelectTrigger className="w-[150px] h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="open">Open</SelectItem>
-                      <SelectItem value="in_progress">In Progress</SelectItem>
-                      <SelectItem value="waiting_for_response">Waiting for Response</SelectItem>
-                      <SelectItem value="solved">Solved</SelectItem>
-                      <SelectItem value="closed">Closed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  getStatusBadge(ticket.status)
-                )}
-                {getPriorityBadge(ticket.priority)}
-              </div>
-            </div>
+    <div className="p-6">
+      <div className="mb-4 flex items-center gap-4">
+        <Button
+          onClick={() => navigate("/support")}
+          variant="ghost"
+          size="icon"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div className="flex-1">
+          <h1 className="text-xl font-bold">{ticket.title}</h1>
+          <div className="flex items-center gap-2 mt-1">
+            {(isSupport || isAdmin) ? (
+              <Select
+                value={ticket.status}
+                onValueChange={handleStatusChange}
+              >
+                <SelectTrigger className="w-[150px] h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="waiting_for_response">Waiting for Response</SelectItem>
+                  <SelectItem value="solved">Solved</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            ) : (
+              getStatusBadge(ticket.status)
+            )}
+            {getPriorityBadge(ticket.priority)}
           </div>
         </div>
-      </header>
+      </div>
 
-      <main className="container mx-auto px-4 py-6 max-w-4xl">
+      <div className="max-w-4xl">
         <Card className="mb-4">
           <CardHeader>
             <CardTitle className="text-base">Ticket Description</CardTitle>
@@ -529,15 +525,14 @@ const Conversation = () => {
             </CardContent>
           </Card>
         )}
-      </main>
 
-      <UserProfileDialog
-        userId={selectedUserId}
-        open={isProfileDialogOpen}
-        onOpenChange={setIsProfileDialogOpen}
-      />
-    </div>
-  );
+        <UserProfileDialog
+          userId={selectedUserId}
+          open={isProfileDialogOpen}
+          onOpenChange={setIsProfileDialogOpen}
+        />
+      </div>
+    );
 };
 
 export default Conversation;

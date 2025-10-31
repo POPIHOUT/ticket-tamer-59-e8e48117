@@ -78,48 +78,35 @@ const Support = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/5 to-accent/10">
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-primary">HotHost.org</h1>
-            {isSupport && (
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
-                Support
-              </span>
-            )}
-            {isAdmin && (
-              <span className="px-3 py-1 bg-accent/10 text-accent rounded-full text-sm font-medium">
-                Admin
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <UserProfile userId={user.id} isSupport={isSupport} isAdmin={isAdmin} />
-            <Button
-              onClick={() => setIsCreateDialogOpen(true)}
-              size="sm"
-              className="gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              New Ticket
-            </Button>
-            <Button
-              onClick={handleSignOut}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </Button>
-          </div>
+    <div className="p-6">
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold text-foreground">HotHost.org</h1>
+          {isSupport && (
+            <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+              Support
+            </span>
+          )}
+          {isAdmin && (
+            <span className="px-3 py-1 bg-accent/10 text-accent rounded-full text-sm font-medium">
+              Admin
+            </span>
+          )}
         </div>
-      </header>
+        <div className="flex items-center gap-3">
+          <UserProfile userId={user.id} isSupport={isSupport} isAdmin={isAdmin} />
+          <Button
+            onClick={() => setIsCreateDialogOpen(true)}
+            size="sm"
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            New Ticket
+          </Button>
+        </div>
+      </div>
 
-      <main className="container mx-auto px-4 py-8">
-        <TicketList userId={user.id} isSupport={isSupport} />
-      </main>
+      <TicketList userId={user.id} isSupport={isSupport} />
 
       <CreateTicketDialog
         userId={user.id}

@@ -8,101 +8,101 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    --background: 220 30% 8%;
+    --foreground: 210 10% 85%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card: 220 25% 12%;
+    --card-foreground: 210 10% 90%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover: 220 25% 12%;
+    --popover-foreground: 210 10% 90%;
 
-    --primary: 200 95% 45%;
+    --primary: 230 60% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 195 75% 50%;
+    --secondary: 225 50% 40%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 15% 92%;
-    --muted-foreground: 215 15% 45%;
+    --muted: 220 20% 18%;
+    --muted-foreground: 215 10% 55%;
 
-    --accent: 190 80% 55%;
+    --accent: 235 60% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 20% 88%;
-    --input: 210 20% 88%;
-    --ring: 200 95% 45%;
+    --border: 220 20% 20%;
+    --input: 220 20% 18%;
+    --ring: 230 60% 55%;
 
-    --success: 145 75% 45%;
+    --success: 145 60% 50%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 35 90% 55%;
+    --warning: 35 85% 55%;
     --warning-foreground: 0 0% 100%;
 
-    --info: 200 95% 45%;
+    --info: 230 60% 55%;
     --info-foreground: 0 0% 100%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 215 30% 15%;
-    --sidebar-foreground: 210 15% 85%;
-    --sidebar-primary: 200 95% 45%;
+    --sidebar-background: 230 45% 18%;
+    --sidebar-foreground: 210 10% 90%;
+    --sidebar-primary: 230 60% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 25% 22%;
-    --sidebar-accent-foreground: 210 15% 90%;
-    --sidebar-border: 215 20% 25%;
-    --sidebar-ring: 200 95% 45%;
+    --sidebar-accent: 230 50% 28%;
+    --sidebar-accent-foreground: 210 10% 95%;
+    --sidebar-border: 230 20% 25%;
+    --sidebar-ring: 230 60% 55%;
   }
 
   .dark {
-    --background: 215 30% 12%;
-    --foreground: 210 15% 90%;
+    --background: 220 30% 8%;
+    --foreground: 210 10% 85%;
 
-    --card: 215 25% 16%;
-    --card-foreground: 210 15% 90%;
+    --card: 220 25% 12%;
+    --card-foreground: 210 10% 90%;
 
-    --popover: 215 25% 16%;
-    --popover-foreground: 210 15% 90%;
+    --popover: 220 25% 12%;
+    --popover-foreground: 210 10% 90%;
 
-    --primary: 200 95% 50%;
+    --primary: 230 60% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 195 75% 55%;
+    --secondary: 225 50% 40%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 215 20% 22%;
-    --muted-foreground: 215 15% 65%;
+    --muted: 220 20% 18%;
+    --muted-foreground: 215 10% 55%;
 
-    --accent: 190 80% 60%;
+    --accent: 235 60% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 65%;
+    --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 20% 25%;
-    --input: 215 20% 25%;
-    --ring: 200 95% 50%;
+    --border: 220 20% 20%;
+    --input: 220 20% 18%;
+    --ring: 230 60% 55%;
 
-    --success: 145 75% 50%;
+    --success: 145 60% 50%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 35 90% 60%;
+    --warning: 35 85% 55%;
     --warning-foreground: 0 0% 100%;
 
-    --info: 200 95% 50%;
+    --info: 230 60% 55%;
     --info-foreground: 0 0% 100%;
 
-    --sidebar-background: 215 30% 15%;
-    --sidebar-foreground: 210 15% 85%;
-    --sidebar-primary: 200 95% 50%;
+    --sidebar-background: 230 45% 18%;
+    --sidebar-foreground: 210 10% 90%;
+    --sidebar-primary: 230 60% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 25% 22%;
-    --sidebar-accent-foreground: 210 15% 90%;
-    --sidebar-border: 215 20% 25%;
-    --sidebar-ring: 200 95% 50%;
+    --sidebar-accent: 230 50% 28%;
+    --sidebar-accent-foreground: 210 10% 95%;
+    --sidebar-border: 230 20% 25%;
+    --sidebar-ring: 230 60% 55%;
   }
 }
 
