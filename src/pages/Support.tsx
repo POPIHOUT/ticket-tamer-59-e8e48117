@@ -78,17 +78,19 @@ const Support = () => {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="p-6 animate-fade-in">
+      <div className="mb-8 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-foreground">HotHost.org</h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            HotHost.org
+          </h1>
           {isSupport && (
-            <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+            <span className="px-3 py-1 bg-gradient-to-r from-primary/20 to-accent/20 text-primary rounded-full text-sm font-medium border border-primary/30 shadow-lg shadow-primary/10">
               Support
             </span>
           )}
           {isAdmin && (
-            <span className="px-3 py-1 bg-accent/10 text-accent rounded-full text-sm font-medium">
+            <span className="px-3 py-1 bg-gradient-to-r from-accent/20 to-primary/20 text-accent rounded-full text-sm font-medium border border-accent/30 shadow-lg shadow-accent/10">
               Admin
             </span>
           )}
@@ -98,7 +100,7 @@ const Support = () => {
           <Button
             onClick={() => setIsCreateDialogOpen(true)}
             size="sm"
-            className="gap-2"
+            className="gap-2 bg-gradient-to-r from-primary to-accent hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 hover:scale-105"
           >
             <Plus className="h-4 w-4" />
             New Ticket
