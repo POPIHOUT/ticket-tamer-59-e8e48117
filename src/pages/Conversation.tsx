@@ -221,6 +221,8 @@ const Conversation = () => {
           return "bg-success text-success-foreground hover:bg-success/90";
         case "waiting_for_response":
           return "bg-warning text-warning-foreground hover:bg-warning/90";
+        case "solved":
+          return "bg-muted text-muted-foreground hover:bg-muted/90";
         case "closed":
           return "bg-destructive text-destructive-foreground hover:bg-destructive/90";
         default:
@@ -232,6 +234,7 @@ const Conversation = () => {
       open: "Open",
       in_progress: "In Progress",
       waiting_for_response: "Waiting for Response",
+      solved: "Solved",
       closed: "Closed",
     };
 
@@ -297,6 +300,7 @@ const Conversation = () => {
                       <SelectItem value="open">Open</SelectItem>
                       <SelectItem value="in_progress">In Progress</SelectItem>
                       <SelectItem value="waiting_for_response">Waiting for Response</SelectItem>
+                      <SelectItem value="solved">Solved</SelectItem>
                       <SelectItem value="closed">Closed</SelectItem>
                     </SelectContent>
                   </Select>

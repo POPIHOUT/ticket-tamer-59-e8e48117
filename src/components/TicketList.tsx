@@ -86,6 +86,8 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
         return <Clock className="h-4 w-4" />;
       case "waiting_for_response":
         return <AlertCircle className="h-4 w-4" />;
+      case "solved":
+        return <CheckCircle2 className="h-4 w-4" />;
       case "closed":
         return <CheckCircle2 className="h-4 w-4" />;
       default:
@@ -101,6 +103,8 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
         return "secondary";
       case "waiting_for_response":
         return "outline"; // Will use warning color
+      case "solved":
+        return "secondary";
       case "closed":
         return "destructive";
       default:
@@ -155,6 +159,7 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
               {ticket.status === "open" ? "Open" : 
                ticket.status === "in_progress" ? "In Progress" : 
                ticket.status === "waiting_for_response" ? "Waiting for Response" : 
+               ticket.status === "solved" ? "Solved" :
                "Closed"}
             </Badge>
             <Badge variant={getPriorityVariant(ticket.priority)}>
@@ -187,7 +192,7 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
   return (
     <>
       <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 mb-6">
+        <TabsList className="grid w-full grid-cols-6 mb-6">
           <TabsTrigger value="all">All ({tickets.length})</TabsTrigger>
           <TabsTrigger value="open">
             Open ({filterTickets("open").length})
@@ -197,6 +202,9 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
           </TabsTrigger>
           <TabsTrigger value="in_progress">
             In Progress ({filterTickets("in_progress").length})
+          </TabsTrigger>
+          <TabsTrigger value="solved">
+            Solved ({filterTickets("solved").length})
           </TabsTrigger>
           <TabsTrigger value="closed">
             Closed ({filterTickets("closed").length})
@@ -248,6 +256,18 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
             </Card>
           ) : (
             filterTickets("in_progress").map(renderTicketCard)
+          )}
+        </TabsContent>
+
+        <TabsContent value="solved" className="space-y-4">
+          {filterTickets("solved").length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                No solved tickets
+              </CardContent>
+            </Card>
+          ) : (
+            filterTickets("solved").map(renderTicketCard)
           )}
         </TabsContent>
 
