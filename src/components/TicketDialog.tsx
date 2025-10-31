@@ -32,7 +32,8 @@ interface Ticket {
   user_id: string;
   profiles: {
     email: string;
-    full_name: string | null;
+    nickname: string | null;
+    phone: string | null;
   };
 }
 
@@ -163,10 +164,11 @@ export const TicketDialog = ({ ticket, userId, isSupport, onClose }: TicketDialo
         <div className="space-y-6">
           {currentIsSupport && (
             <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm font-medium">Informácie o používateľovi</p>
+              <p className="text-sm font-medium">Kontaktné údaje</p>
               <div className="space-y-1 text-sm">
-                <p><span className="font-medium">Meno:</span> {ticket.profiles?.full_name || "N/A"}</p>
+                <p><span className="font-medium">Display Name:</span> {ticket.profiles?.nickname || "N/A"}</p>
                 <p><span className="font-medium">Email:</span> {ticket.profiles?.email}</p>
+                <p><span className="font-medium">Tel.č.:</span> {ticket.profiles?.phone || "N/A"}</p>
               </div>
             </div>
           )}

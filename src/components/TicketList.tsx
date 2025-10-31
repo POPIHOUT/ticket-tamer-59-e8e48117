@@ -17,8 +17,7 @@ interface Ticket {
   created_at: string;
   user_id: string;
   profiles: {
-    email: string;
-    full_name: string | null;
+    nickname: string | null;
   };
 }
 
@@ -62,8 +61,7 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
       .select(`
         *,
         profiles (
-          email,
-          full_name
+          nickname
         )
       `)
       .order("created_at", { ascending: false });
@@ -150,8 +148,8 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
       <CardContent>
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
-            {isSupport && ticket.profiles?.full_name && (
-              <span className="font-medium">{ticket.profiles.full_name} • </span>
+            {ticket.profiles?.nickname && (
+              <span className="font-medium">{ticket.profiles.nickname} • </span>
             )}
             {format(new Date(ticket.created_at), "d. MMMM yyyy, HH:mm", { locale: sk })}
           </span>

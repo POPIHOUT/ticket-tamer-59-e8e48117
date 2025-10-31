@@ -12,9 +12,10 @@ import { Loader2, TicketIcon } from "lucide-react";
 const Auth = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
+  const [loginInput, setLoginInput] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState("");
 
   useEffect(() => {
     const checkSession = async () => {
@@ -31,8 +32,20 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("nickname", loginInput)
+        .single();
+
+      if (profileError || !profile) {
+        toast.error("Display Name nenájdený");
+        setIsLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: profile.email,
         password,
       });
 
@@ -54,12 +67,24 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("nickname", displayName)
+        .maybeSingle();
+
+      if (existingProfile) {
+        toast.error("Display Name už existuje");
+        setIsLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            full_name: fullName,
+            nickname: displayName,
           },
           emailRedirectTo: `${window.location.origin}/support`,
         },
@@ -100,13 +125,13 @@ const Auth = () => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">E-mail</Label>
+                  <Label htmlFor="signin-name">Display Name</Label>
                   <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder="vas@email.sk"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="signin-name"
+                    type="text"
+                    placeholder="VášDisplayName"
+                    value={loginInput}
+                    onChange={(e) => setLoginInput(e.target.value)}
                     required
                     disabled={isLoading}
                   />
@@ -139,19 +164,19 @@ const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">Celé meno</Label>
+                  <Label htmlFor="signup-displayname">Display Name *</Label>
                   <Input
-                    id="signup-name"
+                    id="signup-displayname"
                     type="text"
-                    placeholder="Ján Novák"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="VášDisplayName"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
                     required
                     disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">E-mail</Label>
+                  <Label htmlFor="signup-email">E-mail *</Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -163,7 +188,7 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Heslo</Label>
+                  <Label htmlFor="signup-password">Heslo *</Label>
                   <Input
                     id="signup-password"
                     type="password"
