@@ -17,7 +17,9 @@ interface Ticket {
   created_at: string;
   user_id: string;
   profiles: {
+    email: string;
     nickname: string | null;
+    phone: string | null;
   };
 }
 
@@ -61,7 +63,9 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
       .select(`
         *,
         profiles (
-          nickname
+          email,
+          nickname,
+          phone
         )
       `)
       .order("created_at", { ascending: false });

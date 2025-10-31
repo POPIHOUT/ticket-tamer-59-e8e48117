@@ -23,7 +23,6 @@ interface UserProfileProps {
 
 interface Profile {
   email: string;
-  full_name: string | null;
   nickname: string | null;
   phone: string | null;
 }
@@ -33,7 +32,6 @@ export const UserProfile = ({ userId, isSupport, isAdmin }: UserProfileProps) =>
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    full_name: "",
     nickname: "",
     phone: "",
   });
@@ -45,7 +43,7 @@ export const UserProfile = ({ userId, isSupport, isAdmin }: UserProfileProps) =>
   const fetchProfile = async () => {
     const { data, error } = await supabase
       .from("profiles")
-      .select("email, full_name, nickname, phone")
+      .select("email, nickname, phone")
       .eq("id", userId)
       .single();
 
@@ -54,7 +52,6 @@ export const UserProfile = ({ userId, isSupport, isAdmin }: UserProfileProps) =>
     } else {
       setProfile(data);
       setFormData({
-        full_name: data.full_name || "",
         nickname: data.nickname || "",
         phone: data.phone || "",
       });
@@ -81,8 +78,8 @@ export const UserProfile = ({ userId, isSupport, isAdmin }: UserProfileProps) =>
   };
 
   const getInitials = () => {
-    if (!profile?.full_name) return "U";
-    return profile.full_name
+    if (!profile?.nickname) return "U";
+    return profile.nickname
       .split(" ")
       .map((n) => n[0])
       .join("")
@@ -117,19 +114,7 @@ export const UserProfile = ({ userId, isSupport, isAdmin }: UserProfileProps) =>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="full_name">Celé meno</Label>
-              <Input
-                id="full_name"
-                value={formData.full_name}
-                onChange={(e) =>
-                  setFormData({ ...formData, full_name: e.target.value })
-                }
-                disabled={!isEditing || isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="nickname">Prezývka</Label>
+              <Label htmlFor="nickname">Display Name</Label>
               <Input
                 id="nickname"
                 value={formData.nickname}
@@ -163,7 +148,6 @@ export const UserProfile = ({ userId, isSupport, isAdmin }: UserProfileProps) =>
                     onClick={() => {
                       setIsEditing(false);
                       setFormData({
-                        full_name: profile.full_name || "",
                         nickname: profile.nickname || "",
                         phone: profile.phone || "",
                       });
