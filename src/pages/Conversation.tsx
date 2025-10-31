@@ -532,7 +532,8 @@ const Conversation = () => {
           onOpenChange={setIsProfileDialogOpen}
         />
       </div>
-    );
+    </div>
+  );
 };
 
 export default Conversation;
