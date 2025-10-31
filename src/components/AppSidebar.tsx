@@ -40,7 +40,7 @@ export function AppSidebar() {
   return (
     <Sidebar className={collapsed ? "w-16" : "w-64"} collapsible="icon">
       <SidebarContent className="glass-strong border-r border-white/10">
-        <div className="p-4 border-b border-white/10 flex items-center gap-3 backdrop-blur-xl">
+        <div className={`p-4 border-b border-white/10 flex items-center backdrop-blur-xl ${collapsed ? 'justify-center' : 'gap-3'}`}>
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30">
             <TicketIcon className="h-5 w-5 text-primary-foreground" />
           </div>
@@ -51,7 +51,7 @@ export function AppSidebar() {
 
         <SidebarGroup className="mt-4">
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-2 px-3">
+            <SidebarMenu className={`space-y-2 ${collapsed ? 'px-2' : 'px-3'}`}>
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
@@ -59,10 +59,14 @@ export function AppSidebar() {
                       to={item.url}
                       end
                       className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+                        `flex items-center rounded-lg transition-all duration-200 ${
+                          collapsed 
+                            ? 'justify-center p-2.5' 
+                            : 'gap-3 px-3 py-2.5'
+                        } ${
                           isActive
                             ? "bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/30 backdrop-blur-xl"
-                            : "glass hover:glass-strong text-sidebar-foreground hover:translate-x-1"
+                            : "glass hover:glass-strong text-sidebar-foreground hover:scale-105"
                         }`
                       }
                     >
@@ -81,7 +85,11 @@ export function AppSidebar() {
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 glass hover:glass-strong text-sidebar-foreground hover:translate-x-1"
+                        className={`flex items-center rounded-lg transition-all duration-200 ${
+                          collapsed 
+                            ? 'justify-center p-2.5' 
+                            : 'gap-3 px-3 py-2.5'
+                        } glass hover:glass-strong text-sidebar-foreground hover:scale-105`}
                       >
                         <item.icon className="h-5 w-5 flex-shrink-0" />
                         {!collapsed && <span className="font-medium">{item.title}</span>}
@@ -96,7 +104,11 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 glass hover:glass-strong hover:bg-destructive/20 text-destructive hover:translate-x-1 w-full"
+                      className={`flex items-center rounded-lg transition-all duration-200 w-full ${
+                        collapsed 
+                          ? 'justify-center p-2.5' 
+                          : 'gap-3 px-3 py-2.5'
+                      } glass hover:glass-strong hover:bg-destructive/20 text-destructive hover:scale-105`}
                     >
                       <LogOut className="h-5 w-5 flex-shrink-0" />
                       {!collapsed && <span className="font-medium">Logout</span>}
