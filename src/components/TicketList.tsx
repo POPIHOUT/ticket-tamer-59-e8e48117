@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { TicketDialog } from "./TicketDialog";
 import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
 import { Clock, CheckCircle2, AlertCircle } from "lucide-react";
@@ -26,23 +26,12 @@ interface Ticket {
 interface TicketListProps {
   userId: string;
   isSupport: boolean;
-  selectedTicketId: string | null;
-  onTicketSelected: (ticketId: string | null) => void;
 }
 
-export const TicketList = ({ userId, isSupport, selectedTicketId, onTicketSelected }: TicketListProps) => {
+export const TicketList = ({ userId, isSupport }: TicketListProps) => {
+  const navigate = useNavigate();
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (selectedTicketId) {
-      const ticket = tickets.find(t => t.id === selectedTicketId);
-      if (ticket) {
-        setSelectedTicket(ticket);
-      }
-    }
-  }, [selectedTicketId, tickets]);
 
   useEffect(() => {
     fetchTickets();
@@ -139,7 +128,7 @@ export const TicketList = ({ userId, isSupport, selectedTicketId, onTicketSelect
     <Card
       key={ticket.id}
       className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:border-primary/50"
-      onClick={() => setSelectedTicket(ticket)}
+      onClick={() => navigate(`/conversation/${ticket.id}`)}
     >
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
@@ -245,18 +234,6 @@ export const TicketList = ({ userId, isSupport, selectedTicketId, onTicketSelect
           )}
         </TabsContent>
       </Tabs>
-
-      {selectedTicket && (
-        <TicketDialog
-          ticket={selectedTicket}
-          userId={userId}
-          isSupport={isSupport}
-          onClose={() => {
-            setSelectedTicket(null);
-            onTicketSelected(null);
-          }}
-        />
-      )}
     </>
   );
 };

@@ -16,7 +16,6 @@ const Support = () => {
   const [isSupport, setIsSupport] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -119,19 +118,14 @@ const Support = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <TicketList 
-          userId={user.id} 
-          isSupport={isSupport}
-          selectedTicketId={selectedTicketId}
-          onTicketSelected={setSelectedTicketId}
-        />
+        <TicketList userId={user.id} isSupport={isSupport} />
       </main>
 
       <CreateTicketDialog
         userId={user.id}
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
-        onTicketCreated={(ticketId) => setSelectedTicketId(ticketId)}
+        onTicketCreated={(ticketId) => navigate(`/conversation/${ticketId}`)}
       />
     </div>
   );
