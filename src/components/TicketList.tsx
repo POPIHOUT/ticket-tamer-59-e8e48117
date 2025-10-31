@@ -41,12 +41,72 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
           table: "tickets",
         },
-        () => {
-          fetchTickets();
+        async (payload) => {
+          // Fetch the full ticket with profile data
+          const { data: newTicket } = await supabase
+            .from("tickets")
+            .select(`
+              *,
+              profiles (
+                email,
+                nickname,
+                phone
+              )
+            `)
+            .eq("id", payload.new.id)
+            .single();
+
+          if (newTicket) {
+            setTickets((prev) => [newTicket, ...prev]);
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "tickets",
+        },
+        async (payload) => {
+          // Fetch the updated ticket with profile data
+          const { data: updatedTicket } = await supabase
+            .from("tickets")
+            .select(`
+              *,
+              profiles (
+                email,
+                nickname,
+                phone
+              )
+            `)
+            .eq("id", payload.new.id)
+            .single();
+
+          if (updatedTicket) {
+            setTickets((prev) =>
+              prev.map((ticket) =>
+                ticket.id === updatedTicket.id ? updatedTicket : ticket
+              )
+            );
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "tickets",
+        },
+        (payload) => {
+          setTickets((prev) =>
+            prev.filter((ticket) => ticket.id !== payload.old.id)
+          );
         }
       )
       .subscribe();

@@ -91,7 +91,7 @@ const Conversation = () => {
     fetchTicket();
     fetchMessages();
 
-    const channel = supabase
+    const messagesChannel = supabase
       .channel(`conversation-${ticketId}`)
       .on(
         "postgres_changes",
@@ -101,14 +101,46 @@ const Conversation = () => {
           table: "messages",
           filter: `ticket_id=eq.${ticketId}`,
         },
+        async (payload) => {
+          // Fetch the full message with profile data
+          const { data: newMessage } = await supabase
+            .from("messages")
+            .select(`
+              *,
+              profiles (
+                nickname,
+                is_support
+              )
+            `)
+            .eq("id", payload.new.id)
+            .single();
+
+          if (newMessage) {
+            setMessages((prev) => [...prev, newMessage]);
+          }
+        }
+      )
+      .subscribe();
+
+    const ticketsChannel = supabase
+      .channel(`ticket-updates-${ticketId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "tickets",
+          filter: `id=eq.${ticketId}`,
+        },
         (payload) => {
-          fetchMessages();
+          setTicket((prev) => prev ? { ...prev, ...payload.new } : null);
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(ticketsChannel);
     };
   }, [ticketId, user]);
 
@@ -179,9 +211,7 @@ const Conversation = () => {
       if (error) throw error;
 
       setNewMessage("");
-      
-      // Refresh ticket to see updated status if it was closed
-      fetchTicket();
+      // No need to fetch - realtime will update automatically
     } catch (error: any) {
       toast.error("Error sending message");
       console.error(error);
@@ -207,7 +237,7 @@ const Conversation = () => {
       if (error) throw error;
 
       toast.success("Status updated");
-      fetchTicket();
+      // No need to fetch - realtime will update automatically
     } catch (error: any) {
       toast.error("Error updating status");
       console.error(error);
