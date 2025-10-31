@@ -32,20 +32,8 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("nickname", loginInput)
-        .single();
-
-      if (profileError || !profile) {
-        toast.error("Display Name not found");
-        setIsLoading(false);
-        return;
-      }
-
       const { error } = await supabase.auth.signInWithPassword({
-        email: profile.email,
+        email: loginInput,
         password,
       });
 
@@ -125,11 +113,11 @@ const Auth = () => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-name">Display Name</Label>
+                  <Label htmlFor="signin-email">Email</Label>
                   <Input
-                    id="signin-name"
-                    type="text"
-                    placeholder="YourDisplayName"
+                    id="signin-email"
+                    type="email"
+                    placeholder="you@example.com"
                     value={loginInput}
                     onChange={(e) => setLoginInput(e.target.value)}
                     required
