@@ -1,5 +1,5 @@
 import { Home, User, LogOut, TicketIcon, Globe, MessageCircle } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -25,6 +25,8 @@ const externalItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname;
   const collapsed = state === "collapsed";
 
   const handleLogout = async () => {
@@ -38,7 +40,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className={collapsed ? "w-16" : "w-64"} collapsible="icon">
+    <Sidebar collapsible="icon">
       <SidebarContent className="glass-strong border-r border-white/10">
         <div className={`p-4 border-b border-white/10 flex items-center backdrop-blur-xl ${collapsed ? 'justify-center' : 'gap-3'}`}>
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30">
@@ -51,27 +53,18 @@ export function AppSidebar() {
 
         <SidebarGroup className="mt-4">
           <SidebarGroupContent>
-            <SidebarMenu className={`space-y-2 ${collapsed ? 'px-2' : 'px-3'}`}>
+            <SidebarMenu className="space-y-2">
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end
-                      className={({ isActive }) =>
-                        `flex items-center rounded-lg transition-all duration-200 ${
-                          collapsed 
-                            ? 'justify-center p-2.5' 
-                            : 'gap-3 px-3 py-2.5'
-                        } ${
-                          isActive
-                            ? "bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg shadow-primary/30 backdrop-blur-xl"
-                            : "glass hover:glass-strong text-sidebar-foreground hover:scale-105"
-                        }`
-                      }
-                    >
+                  <SidebarMenuButton
+                    asChild
+                    isActive={currentPath === item.url}
+                    className={`glass hover:glass-strong ${collapsed ? 'justify-center' : ''}`}
+                    tooltip={item.title}
+                  >
+                    <NavLink to={item.url} end className="flex items-center w-full">
                       <item.icon className="h-5 w-5 flex-shrink-0" />
-                      {!collapsed && <span className="font-medium">{item.title}</span>}
+                      {!collapsed && <span className="ml-2 font-medium">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -80,19 +73,14 @@ export function AppSidebar() {
               <div className="pt-2 mt-2 border-t border-white/10">
                 {externalItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`flex items-center rounded-lg transition-all duration-200 ${
-                          collapsed 
-                            ? 'justify-center p-2.5' 
-                            : 'gap-3 px-3 py-2.5'
-                        } glass hover:glass-strong text-sidebar-foreground hover:scale-105`}
-                      >
+                    <SidebarMenuButton
+                      asChild
+                      className={`glass hover:glass-strong ${collapsed ? 'justify-center' : ''}`}
+                      tooltip={item.title}
+                    >
+                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-center w-full">
                         <item.icon className="h-5 w-5 flex-shrink-0" />
-                        {!collapsed && <span className="font-medium">{item.title}</span>}
+                        {!collapsed && <span className="ml-2 font-medium">{item.title}</span>}
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -101,17 +89,14 @@ export function AppSidebar() {
 
               <div className="pt-4 mt-4 border-t border-white/10">
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <button
-                      onClick={handleLogout}
-                      className={`flex items-center rounded-lg transition-all duration-200 w-full ${
-                        collapsed 
-                          ? 'justify-center p-2.5' 
-                          : 'gap-3 px-3 py-2.5'
-                      } glass hover:glass-strong hover:bg-destructive/20 text-destructive hover:scale-105`}
-                    >
+                  <SidebarMenuButton
+                    asChild
+                    className={`glass hover:glass-strong hover:bg-destructive/20 text-destructive ${collapsed ? 'justify-center' : ''}`}
+                    tooltip="Logout"
+                  >
+                    <button onClick={handleLogout} className="flex items-center w-full">
                       <LogOut className="h-5 w-5 flex-shrink-0" />
-                      {!collapsed && <span className="font-medium">Logout</span>}
+                      {!collapsed && <span className="ml-2 font-medium">Logout</span>}
                     </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
