@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { TicketDialog } from "./TicketDialog";
 import { format } from "date-fns";
-import { sk } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import { Clock, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface Ticket {
@@ -26,12 +26,23 @@ interface Ticket {
 interface TicketListProps {
   userId: string;
   isSupport: boolean;
+  selectedTicketId: string | null;
+  onTicketSelected: (ticketId: string | null) => void;
 }
 
-export const TicketList = ({ userId, isSupport }: TicketListProps) => {
+export const TicketList = ({ userId, isSupport, selectedTicketId, onTicketSelected }: TicketListProps) => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (selectedTicketId) {
+      const ticket = tickets.find(t => t.id === selectedTicketId);
+      if (ticket) {
+        setSelectedTicket(ticket);
+      }
+    }
+  }, [selectedTicketId, tickets]);
 
   useEffect(() => {
     fetchTickets();
@@ -141,10 +152,10 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
           <div className="flex flex-col gap-2">
             <Badge variant={getStatusVariant(ticket.status)} className="gap-1">
               {getStatusIcon(ticket.status)}
-              {ticket.status === "open" ? "Otvorený" : ticket.status === "in_progress" ? "V riešení" : "Zatvorený"}
+              {ticket.status === "open" ? "Open" : ticket.status === "in_progress" ? "In Progress" : "Closed"}
             </Badge>
             <Badge variant={getPriorityVariant(ticket.priority)}>
-              {ticket.priority === "urgent" ? "Naliehavý" : ticket.priority === "high" ? "Vysoká" : ticket.priority === "medium" ? "Stredná" : "Nízka"}
+              {ticket.priority === "urgent" ? "Urgent" : ticket.priority === "high" ? "High" : ticket.priority === "medium" ? "Medium" : "Low"}
             </Badge>
           </div>
         </div>
@@ -155,7 +166,7 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
             {ticket.profiles?.nickname && (
               <span className="font-medium">{ticket.profiles.nickname} • </span>
             )}
-            {format(new Date(ticket.created_at), "d. MMMM yyyy, HH:mm", { locale: sk })}
+            {format(new Date(ticket.created_at), "d MMMM yyyy, HH:mm", { locale: enUS })}
           </span>
         </div>
       </CardContent>
@@ -165,7 +176,7 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-muted-foreground">Načítavam tickety...</div>
+        <div className="text-muted-foreground">Loading tickets...</div>
       </div>
     );
   }
@@ -174,15 +185,15 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
     <>
       <Tabs defaultValue="all" className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-6">
-          <TabsTrigger value="all">Všetky ({tickets.length})</TabsTrigger>
+          <TabsTrigger value="all">All ({tickets.length})</TabsTrigger>
           <TabsTrigger value="open">
-            Otvorené ({filterTickets("open").length})
+            Open ({filterTickets("open").length})
           </TabsTrigger>
           <TabsTrigger value="in_progress">
-            V riešení ({filterTickets("in_progress").length})
+            In Progress ({filterTickets("in_progress").length})
           </TabsTrigger>
           <TabsTrigger value="closed">
-            Zatvorené ({filterTickets("closed").length})
+            Closed ({filterTickets("closed").length})
           </TabsTrigger>
         </TabsList>
 
@@ -190,7 +201,7 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
           {tickets.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
-                Žiadne tickety
+                No tickets
               </CardContent>
             </Card>
           ) : (
@@ -202,7 +213,7 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
           {filterTickets("open").length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
-                Žiadne otvorené tickety
+                No open tickets
               </CardContent>
             </Card>
           ) : (
@@ -214,7 +225,7 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
           {filterTickets("in_progress").length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
-                Žiadne tickety v riešení
+                No tickets in progress
               </CardContent>
             </Card>
           ) : (
@@ -226,7 +237,7 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
           {filterTickets("closed").length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
-                Žiadne zatvorené tickety
+                No closed tickets
               </CardContent>
             </Card>
           ) : (
@@ -239,8 +250,11 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
         <TicketDialog
           ticket={selectedTicket}
           userId={userId}
-          isSupport={false}
-          onClose={() => setSelectedTicket(null)}
+          isSupport={isSupport}
+          onClose={() => {
+            setSelectedTicket(null);
+            onTicketSelected(null);
+          }}
         />
       )}
     </>

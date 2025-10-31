@@ -19,7 +19,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { sk } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import { X, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface Ticket {
@@ -76,9 +76,9 @@ export const TicketDialog = ({ ticket, userId, isSupport, onClose }: TicketDialo
         .eq("id", ticket.id);
 
       if (error) {
-        toast.error("Chyba pri zatváraní ticketu");
+        toast.error("Error closing ticket");
       } else {
-        toast.success("Ticket zatvorený");
+        toast.success("Ticket closed");
       }
       setIsLoading(false);
     }
@@ -100,10 +100,10 @@ export const TicketDialog = ({ ticket, userId, isSupport, onClose }: TicketDialo
       .eq("id", ticket.id);
 
     if (error) {
-      toast.error("Chyba pri aktualizácii statusu");
+      toast.error("Error updating status");
     } else {
       setStatus(newStatus);
-      toast.success("Status aktualizovaný");
+      toast.success("Status updated");
     }
     setIsLoading(false);
   };
@@ -118,10 +118,10 @@ export const TicketDialog = ({ ticket, userId, isSupport, onClose }: TicketDialo
       .eq("id", ticket.id);
 
     if (error) {
-      toast.error("Chyba pri aktualizácii priority");
+      toast.error("Error updating priority");
     } else {
       setPriority(newPriority);
-      toast.success("Priorita aktualizovaná");
+      toast.success("Priority updated");
     }
     setIsLoading(false);
   };
@@ -147,7 +147,7 @@ export const TicketDialog = ({ ticket, userId, isSupport, onClose }: TicketDialo
             <div className="space-y-2 flex-1">
               <DialogTitle className="text-2xl">{ticket.title}</DialogTitle>
               <DialogDescription>
-                Vytvorené {format(new Date(ticket.created_at), "d. MMMM yyyy, HH:mm", { locale: sk })}
+                Created {format(new Date(ticket.created_at), "d MMMM yyyy, HH:mm", { locale: enUS })}
               </DialogDescription>
             </div>
             <Button
@@ -164,17 +164,17 @@ export const TicketDialog = ({ ticket, userId, isSupport, onClose }: TicketDialo
         <div className="space-y-6">
           {currentIsSupport && (
             <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm font-medium">Kontaktné údaje</p>
+              <p className="text-sm font-medium">Contact Information</p>
               <div className="space-y-1 text-sm">
                 <p><span className="font-medium">Display Name:</span> {ticket.profiles?.nickname || "N/A"}</p>
                 <p><span className="font-medium">Email:</span> {ticket.profiles?.email}</p>
-                <p><span className="font-medium">Tel.č.:</span> {ticket.profiles?.phone || "N/A"}</p>
+                <p><span className="font-medium">Phone:</span> {ticket.profiles?.phone || "N/A"}</p>
               </div>
             </div>
           )}
 
           <div className="space-y-2">
-            <Label>Popis</Label>
+            <Label>Description</Label>
             <p className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/30 p-4 rounded-lg">
               {ticket.description}
             </p>
@@ -196,19 +196,19 @@ export const TicketDialog = ({ ticket, userId, isSupport, onClose }: TicketDialo
                     <SelectItem value="open">
                       <div className="flex items-center gap-2">
                         {getStatusIcon("open")}
-                        Otvorený
+                        Open
                       </div>
                     </SelectItem>
                     <SelectItem value="in_progress">
                       <div className="flex items-center gap-2">
                         {getStatusIcon("in_progress")}
-                        V riešení
+                        In Progress
                       </div>
                     </SelectItem>
                     <SelectItem value="closed">
                       <div className="flex items-center gap-2">
                         {getStatusIcon("closed")}
-                        Zatvorený
+                        Closed
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -217,14 +217,14 @@ export const TicketDialog = ({ ticket, userId, isSupport, onClose }: TicketDialo
                 <div className="flex items-center gap-2 h-10 px-3 border rounded-md bg-muted/30">
                   {getStatusIcon(status)}
                   <span>
-                    {status === "open" ? "Otvorený" : status === "in_progress" ? "V riešení" : "Zatvorený"}
+                    {status === "open" ? "Open" : status === "in_progress" ? "In Progress" : "Closed"}
                   </span>
                 </div>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label>Priorita</Label>
+              <Label>Priority</Label>
               {currentIsSupport ? (
                 <Select
                   value={priority}
@@ -235,15 +235,15 @@ export const TicketDialog = ({ ticket, userId, isSupport, onClose }: TicketDialo
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Nízka</SelectItem>
-                    <SelectItem value="medium">Stredná</SelectItem>
-                    <SelectItem value="high">Vysoká</SelectItem>
-                    <SelectItem value="urgent">Naliehavá</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="urgent">Urgent</SelectItem>
                   </SelectContent>
                 </Select>
               ) : (
                 <div className="flex items-center h-10 px-3 border rounded-md bg-muted/30">
-                  {priority === "urgent" ? "Naliehavá" : priority === "high" ? "Vysoká" : priority === "medium" ? "Stredná" : "Nízka"}
+                  {priority === "urgent" ? "Urgent" : priority === "high" ? "High" : priority === "medium" ? "Medium" : "Low"}
                 </div>
               )}
             </div>
@@ -257,7 +257,7 @@ export const TicketDialog = ({ ticket, userId, isSupport, onClose }: TicketDialo
                 className="w-full"
                 disabled={isLoading}
               >
-                Zatvoriť ticket
+                Close Ticket
               </Button>
             </div>
           )}

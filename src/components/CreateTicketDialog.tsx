@@ -25,12 +25,14 @@ interface CreateTicketDialogProps {
   userId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onTicketCreated?: (ticketId: string) => void;
 }
 
 export const CreateTicketDialog = ({
   userId,
   open,
   onOpenChange,
+  onTicketCreated,
 }: CreateTicketDialogProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [title, setTitle] = useState("");
@@ -42,23 +44,31 @@ export const CreateTicketDialog = ({
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.from("tickets").insert({
-        user_id: userId,
-        title,
-        description,
-        priority,
-        status: "open",
-      });
+      const { data, error } = await supabase
+        .from("tickets")
+        .insert({
+          user_id: userId,
+          title,
+          description,
+          priority,
+          status: "open",
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
-      toast.success("Ticket vytvorený!");
+      toast.success("Ticket created!");
       setTitle("");
       setDescription("");
       setPriority("medium");
       onOpenChange(false);
+      
+      if (data && onTicketCreated) {
+        onTicketCreated(data.id);
+      }
     } catch (error: any) {
-      toast.error("Chyba pri vytváraní ticketu");
+      toast.error("Error creating ticket");
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -69,17 +79,17 @@ export const CreateTicketDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Vytvoriť nový ticket</DialogTitle>
+          <DialogTitle>Create New Ticket</DialogTitle>
           <DialogDescription>
-            Popíšte váš problém alebo požiadavku
+            Describe your issue or request
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Názov</Label>
+            <Label htmlFor="title">Title</Label>
             <Input
               id="title"
-              placeholder="Stručný popis problému"
+              placeholder="Brief description of the issue"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
@@ -88,25 +98,25 @@ export const CreateTicketDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="priority">Priorita</Label>
+            <Label htmlFor="priority">Priority</Label>
             <Select value={priority} onValueChange={setPriority} disabled={isLoading}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">Nízka</SelectItem>
-                <SelectItem value="medium">Stredná</SelectItem>
-                <SelectItem value="high">Vysoká</SelectItem>
-                <SelectItem value="urgent">Naliehavá</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Popis</Label>
+            <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
-              placeholder="Detailný popis problému..."
+              placeholder="Detailed description of the issue..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
@@ -122,16 +132,16 @@ export const CreateTicketDialog = ({
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
-              Zrušiť
+              Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Vytváram...
+                  Creating...
                 </>
               ) : (
-                "Vytvoriť ticket"
+                "Create Ticket"
               )}
             </Button>
           </div>

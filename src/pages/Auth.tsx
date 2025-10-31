@@ -39,7 +39,7 @@ const Auth = () => {
         .single();
 
       if (profileError || !profile) {
-        toast.error("Display Name nenájdený");
+        toast.error("Display Name not found");
         setIsLoading(false);
         return;
       }
@@ -52,11 +52,11 @@ const Auth = () => {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Prihlásenie úspešné!");
+        toast.success("Successfully signed in!");
         navigate("/support");
       }
     } catch (error: any) {
-      toast.error("Nastala chyba pri prihlasovaní");
+      toast.error("An error occurred during sign in");
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +74,7 @@ const Auth = () => {
         .maybeSingle();
 
       if (existingProfile) {
-        toast.error("Display Name už existuje");
+        toast.error("Display Name already exists");
         setIsLoading(false);
         return;
       }
@@ -93,11 +93,11 @@ const Auth = () => {
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Registrácia úspešná! Presmerovanie...");
+        toast.success("Registration successful! Redirecting...");
         navigate("/support");
       }
     } catch (error: any) {
-      toast.error("Nastala chyba pri registrácii");
+      toast.error("An error occurred during registration");
     } finally {
       setIsLoading(false);
     }
@@ -112,14 +112,14 @@ const Auth = () => {
           </div>
           <CardTitle className="text-3xl font-bold">Support Ticket System</CardTitle>
           <CardDescription className="text-base">
-            Prihláste sa alebo vytvorte nový účet
+            Sign in or create a new account
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="signin">Prihlásenie</TabsTrigger>
-              <TabsTrigger value="signup">Registrácia</TabsTrigger>
+              <TabsTrigger value="signin">Sign In</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
@@ -129,7 +129,7 @@ const Auth = () => {
                   <Input
                     id="signin-name"
                     type="text"
-                    placeholder="VášDisplayName"
+                    placeholder="YourDisplayName"
                     value={loginInput}
                     onChange={(e) => setLoginInput(e.target.value)}
                     required
@@ -137,7 +137,7 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">Heslo</Label>
+                  <Label htmlFor="signin-password">Password</Label>
                   <Input
                     id="signin-password"
                     type="password"
@@ -152,10 +152,10 @@ const Auth = () => {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Prihlasujem...
+                      Signing in...
                     </>
                   ) : (
-                    "Prihlásiť sa"
+                    "Sign In"
                   )}
                 </Button>
               </form>
@@ -168,7 +168,7 @@ const Auth = () => {
                   <Input
                     id="signup-displayname"
                     type="text"
-                    placeholder="VášDisplayName"
+                    placeholder="YourDisplayName"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     required
@@ -176,11 +176,11 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">E-mail *</Label>
+                  <Label htmlFor="signup-email">Email *</Label>
                   <Input
                     id="signup-email"
                     type="email"
-                    placeholder="vas@email.sk"
+                    placeholder="your@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -188,7 +188,7 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Heslo *</Label>
+                  <Label htmlFor="signup-password">Password *</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -204,10 +204,10 @@ const Auth = () => {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Registrujem...
+                      Creating account...
                     </>
                   ) : (
-                    "Vytvoriť účet"
+                    "Create Account"
                   )}
                 </Button>
               </form>

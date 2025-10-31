@@ -16,6 +16,7 @@ const Support = () => {
   const [isSupport, setIsSupport] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -66,9 +67,9 @@ const Support = () => {
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      toast.error("Chyba pri odhlasovaní");
+      toast.error("Error signing out");
     } else {
-      toast.success("Odhlásený");
+      toast.success("Signed out");
       navigate("/");
     }
   };
@@ -85,7 +86,7 @@ const Support = () => {
             <h1 className="text-2xl font-bold text-primary">Support Tickets</h1>
             {isSupport && (
               <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
-                Podpora
+                Support
               </span>
             )}
             {isAdmin && (
@@ -102,7 +103,7 @@ const Support = () => {
               className="gap-2"
             >
               <Plus className="h-4 w-4" />
-              Nový ticket
+              New Ticket
             </Button>
             <Button
               onClick={handleSignOut}
@@ -111,20 +112,26 @@ const Support = () => {
               className="gap-2"
             >
               <LogOut className="h-4 w-4" />
-              Odhlásiť sa
+              Sign Out
             </Button>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <TicketList userId={user.id} isSupport={isSupport} />
+        <TicketList 
+          userId={user.id} 
+          isSupport={isSupport}
+          selectedTicketId={selectedTicketId}
+          onTicketSelected={setSelectedTicketId}
+        />
       </main>
 
       <CreateTicketDialog
         userId={user.id}
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
+        onTicketCreated={(ticketId) => setSelectedTicketId(ticketId)}
       />
     </div>
   );
