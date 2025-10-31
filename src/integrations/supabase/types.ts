@@ -141,6 +141,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_email_by_nickname: { Args: { _nickname: string }; Returns: string }
       is_admin_user: { Args: { _user_id: string }; Returns: boolean }
       is_support_user: { Args: { _user_id: string }; Returns: boolean }
     }

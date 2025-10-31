@@ -32,8 +32,23 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
+      let emailToUse = loginInput;
+
+      // If input doesn't contain @, it's a display name - look up the email
+      if (!loginInput.includes('@')) {
+        const { data, error: lookupError } = await supabase
+          .rpc('get_email_by_nickname', { _nickname: loginInput });
+
+        if (lookupError || !data) {
+          toast.error("Display Name not found");
+          setIsLoading(false);
+          return;
+        }
+        emailToUse = data;
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
-        email: loginInput,
+        email: emailToUse,
         password,
       });
 
@@ -113,11 +128,11 @@ const Auth = () => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="signin-input">Email or Display Name</Label>
                   <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder="you@example.com"
+                    id="signin-input"
+                    type="text"
+                    placeholder="your@email.com or YourDisplayName"
                     value={loginInput}
                     onChange={(e) => setLoginInput(e.target.value)}
                     required
