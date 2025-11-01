@@ -331,18 +331,6 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
           )}
         </TabsContent>
 
-        <TabsContent value="solved" className="space-y-4">
-          {filterTickets("solved").length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                No solved tickets
-              </CardContent>
-            </Card>
-          ) : (
-            filterTickets("solved").map(renderTicketCard)
-          )}
-        </TabsContent>
-
         <TabsContent value="closed" className="space-y-4">
           {filterTickets("closed").length === 0 ? (
             <Card>
