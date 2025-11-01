@@ -195,19 +195,19 @@ export const UserProfile = ({ userId, isSupport, isAdmin }: UserProfileProps) =>
               />
             </div>
 
-            {(isSupport || isAdmin) && (
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  disabled={!isEditing || isLoading}
-                />
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+421 XXX XXX XXX"
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                disabled={!isEditing || isLoading}
+              />
+            </div>
 
             <div className="flex justify-end gap-2 pt-4">
               {isEditing ? (
