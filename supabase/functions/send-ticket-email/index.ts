@@ -13,7 +13,6 @@ interface TicketEmailRequest {
   priority: string;
   userName: string;
   userEmail: string;
-  appOrigin?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -23,12 +22,11 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { ticketId, title, description, priority, userName, userEmail, appOrigin }: TicketEmailRequest = await req.json();
+    const { ticketId, title, description, priority, userName, userEmail }: TicketEmailRequest = await req.json();
 
     console.log("Sending ticket notification email:", { ticketId, title, userEmail });
 
-    const baseUrl = appOrigin || "";
-    const ticketUrl = baseUrl ? `${baseUrl}/conversation/${ticketId}` : `/conversation/${ticketId}`;
+    const ticketUrl = `https://hothost.org/conversation/${ticketId}`;
 
     const priorityColors: Record<string, string> = {
       low: "#10b981",
