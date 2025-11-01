@@ -198,43 +198,55 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
       className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:border-primary/50"
       onClick={() => navigate(`/conversation/${ticket.id}`)}
     >
-      <CardHeader>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 space-y-2">
-            <CardTitle className="text-lg">{ticket.title}</CardTitle>
-            <CardDescription className="line-clamp-2">
+      <CardHeader className="p-3 md:p-6">
+        <div className="flex items-start justify-between gap-2 md:gap-4">
+          <div className="flex-1 space-y-1 md:space-y-2 min-w-0">
+            <CardTitle className="text-base md:text-lg line-clamp-2">{ticket.title}</CardTitle>
+            <CardDescription className="line-clamp-2 text-xs md:text-sm">
               {ticket.description}
             </CardDescription>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1 md:gap-2 flex-shrink-0">
             <Badge 
               variant={getStatusVariant(ticket.status)} 
-              className={`gap-1 ${
+              className={`gap-1 text-xs ${
                 ticket.status === "open" ? "bg-success text-success-foreground hover:bg-success/90" :
                 ticket.status === "waiting_for_response" ? "bg-warning text-warning-foreground hover:bg-warning/90 border-0" :
                 ""
               }`}
             >
               {getStatusIcon(ticket.status)}
-              {ticket.status === "open" ? "Open" : 
-               ticket.status === "in_progress" ? "In Progress" : 
-               ticket.status === "waiting_for_response" ? "Waiting for Response" : 
-               ticket.status === "solved" ? "Solved" :
-               "Closed"}
+              <span className="hidden md:inline">
+                {ticket.status === "open" ? "Open" : 
+                 ticket.status === "in_progress" ? "In Progress" : 
+                 ticket.status === "waiting_for_response" ? "Waiting" : 
+                 ticket.status === "solved" ? "Solved" :
+                 "Closed"}
+              </span>
             </Badge>
-            <Badge variant={getPriorityVariant(ticket.priority)}>
-              {ticket.priority === "urgent" ? "Urgent" : ticket.priority === "high" ? "High" : ticket.priority === "medium" ? "Medium" : "Low"}
+            <Badge variant={getPriorityVariant(ticket.priority)} className="text-xs">
+              <span className="hidden sm:inline">
+                {ticket.priority === "urgent" ? "Urgent" : ticket.priority === "high" ? "High" : ticket.priority === "medium" ? "Medium" : "Low"}
+              </span>
+              <span className="sm:hidden">
+                {ticket.priority === "urgent" ? "!" : ticket.priority === "high" ? "H" : ticket.priority === "medium" ? "M" : "L"}
+              </span>
             </Badge>
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>
+      <CardContent className="p-3 md:p-6 pt-0">
+        <div className="flex items-center justify-between text-xs md:text-sm text-muted-foreground">
+          <span className="truncate">
             {ticket.profiles?.nickname && (
               <span className="font-medium">{ticket.profiles.nickname} • </span>
             )}
-            {format(new Date(ticket.created_at), "d MMMM yyyy, HH:mm", { locale: enUS })}
+            <span className="hidden sm:inline">
+              {format(new Date(ticket.created_at), "d MMMM yyyy, HH:mm", { locale: enUS })}
+            </span>
+            <span className="sm:hidden">
+              {format(new Date(ticket.created_at), "d MMM", { locale: enUS })}
+            </span>
           </span>
         </div>
       </CardContent>
@@ -252,22 +264,29 @@ export const TicketList = ({ userId, isSupport }: TicketListProps) => {
   return (
     <>
       <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 mb-6">
-          <TabsTrigger value="all">All ({tickets.length})</TabsTrigger>
-          <TabsTrigger value="open">
-            Open ({filterTickets("open").length})
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 mb-4 md:mb-6 h-auto">
+          <TabsTrigger value="all" className="text-xs md:text-sm px-1 md:px-3 py-2">
+            All ({tickets.length})
           </TabsTrigger>
-          <TabsTrigger value="waiting_for_response">
-            Waiting ({filterTickets("waiting_for_response").length})
+          <TabsTrigger value="open" className="text-xs md:text-sm px-1 md:px-3 py-2">
+            <span className="hidden sm:inline">Open ({filterTickets("open").length})</span>
+            <span className="sm:hidden">Open</span>
           </TabsTrigger>
-          <TabsTrigger value="in_progress">
-            In Progress ({filterTickets("in_progress").length})
+          <TabsTrigger value="waiting_for_response" className="text-xs md:text-sm px-1 md:px-3 py-2">
+            <span className="hidden md:inline">Waiting ({filterTickets("waiting_for_response").length})</span>
+            <span className="md:hidden">Wait</span>
           </TabsTrigger>
-          <TabsTrigger value="solved">
-            Solved ({filterTickets("solved").length})
+          <TabsTrigger value="in_progress" className="text-xs md:text-sm px-1 md:px-3 py-2">
+            <span className="hidden sm:inline">In Progress ({filterTickets("in_progress").length})</span>
+            <span className="sm:hidden">Progress</span>
           </TabsTrigger>
-          <TabsTrigger value="closed">
-            Closed ({filterTickets("closed").length})
+          <TabsTrigger value="solved" className="text-xs md:text-sm px-1 md:px-3 py-2">
+            <span className="hidden sm:inline">Solved ({filterTickets("solved").length})</span>
+            <span className="sm:hidden">Solved</span>
+          </TabsTrigger>
+          <TabsTrigger value="closed" className="text-xs md:text-sm px-1 md:px-3 py-2">
+            <span className="hidden sm:inline">Closed ({filterTickets("closed").length})</span>
+            <span className="sm:hidden">Closed</span>
           </TabsTrigger>
         </TabsList>
 
