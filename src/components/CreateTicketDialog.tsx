@@ -91,6 +91,7 @@ export const CreateTicketDialog = ({
               priority,
               userName: profileData.nickname || "Používateľ",
               userEmail: profileData.email,
+              appOrigin: window.location.origin,
             },
           });
           console.log("Email notification sent successfully");

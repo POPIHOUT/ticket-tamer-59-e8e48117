@@ -1,7 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@4.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,6 +13,7 @@ interface TicketEmailRequest {
   priority: string;
   userName: string;
   userEmail: string;
+  appOrigin?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -25,11 +23,12 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { ticketId, title, description, priority, userName, userEmail }: TicketEmailRequest = await req.json();
+    const { ticketId, title, description, priority, userName, userEmail, appOrigin }: TicketEmailRequest = await req.json();
 
     console.log("Sending ticket notification email:", { ticketId, title, userEmail });
 
-    const ticketUrl = `${Deno.env.get("SUPABASE_URL")?.replace("https://", "https://jxkiyamkpxptcyodznhe.")}/conversation/${ticketId}`;
+    const baseUrl = appOrigin || "";
+    const ticketUrl = baseUrl ? `${baseUrl}/conversation/${ticketId}` : `/conversation/${ticketId}`;
 
     const priorityColors: Record<string, string> = {
       low: "#10b981",
@@ -40,11 +39,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     const priorityColor = priorityColors[priority] || "#6b7280";
 
-    const emailResponse = await resend.emails.send({
-      from: "HotHost Support <tickets@hothost.org>",
-      to: ["info@hothost.org"],
-      subject: `Nový ticket: ${title}`,
-      html: `
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    if (!RESEND_API_KEY) {
+      throw new Error("Missing RESEND_API_KEY");
+    }
+
+    const html = `
         <!DOCTYPE html>
         <html>
           <head>
@@ -121,9 +121,26 @@ const handler = async (req: Request): Promise<Response> => {
               </tr>
             </table>
           </body>
-        </html>
-      `,
+        </html>`;
+
+    const resendResponse = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "HotHost Support <tickets@hothost.org>",
+        to: ["info@hothost.org"],
+        subject: `Nový ticket: ${title}`,
+        html,
+      }),
     });
+
+    const emailResponse = await resendResponse.json();
+    if (!resendResponse.ok) {
+      throw new Error(emailResponse?.error?.message || "Resend API error");
+    }
 
     console.log("Email sent successfully:", emailResponse);
 
