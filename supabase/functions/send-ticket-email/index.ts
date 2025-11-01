@@ -26,7 +26,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending ticket notification email:", { ticketId, title, userEmail });
 
-    const ticketUrl = `https://hothost.org/conversation/${ticketId}`;
+    const ticketUrl = `https://support.hothost.org/conversation/${ticketId}`;
 
     const priorityColors: Record<string, string> = {
       low: "#10b981",
