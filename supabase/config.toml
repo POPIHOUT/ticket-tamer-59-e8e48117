@@ -1,1 +1,4 @@
 project_id = "jxkiyamkpxptcyodznhe"
+
+[functions.send-ticket-email]
+import_map = "./functions/import_map.json"

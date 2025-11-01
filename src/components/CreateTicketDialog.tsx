@@ -73,6 +73,33 @@ export const CreateTicketDialog = ({
         }
       }
 
+      // Get user profile for email
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("nickname, email")
+        .eq("id", userId)
+        .single();
+
+      // Send email notification
+      if (data && profileData) {
+        try {
+          await supabase.functions.invoke("send-ticket-email", {
+            body: {
+              ticketId: data.id,
+              title,
+              description,
+              priority,
+              userName: profileData.nickname || "Používateľ",
+              userEmail: profileData.email,
+            },
+          });
+          console.log("Email notification sent successfully");
+        } catch (emailError) {
+          console.error("Error sending email notification:", emailError);
+          // Don't fail the ticket creation if email fails
+        }
+      }
+
       toast.success("Ticket created!");
       setTitle("");
       setDescription("");
