@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Shield, Loader2, QrCode, Check, X } from "lucide-react";
-import QRCode from "qrcode";
 import {
   Dialog,
   DialogContent,
@@ -54,14 +53,15 @@ export const TwoFactorAuth = ({ userId }: TwoFactorAuthProps) => {
       if (error) throw error;
 
       if (data) {
+        // Use the SVG QR code directly from Supabase
+        const svgQRCode = data.totp.qr_code;
+        
+        // Convert SVG string to data URL
+        const blob = new Blob([svgQRCode], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        
+        setQrCodeUrl(url);
         setSecret(data.totp.secret);
-        
-        // Generate QR code
-        const { data: { user } } = await supabase.auth.getUser();
-        const otpauthUrl = data.totp.uri;
-        
-        const qrDataUrl = await QRCode.toDataURL(otpauthUrl);
-        setQrCodeUrl(qrDataUrl);
         setShowSetupDialog(true);
       }
     } catch (error: any) {
