@@ -47,17 +47,32 @@ export const TwoFactorAuth = ({ userId }: TwoFactorAuthProps) => {
   const handleEnableMFA = async () => {
     setSetupLoading(true);
     try {
-      // First, clean up any unverified factors
+      // Cleanup any existing non-verified TOTP factors to avoid name conflicts
       const { data: existingFactors } = await supabase.auth.mfa.listFactors();
-      const unverifiedFactors = existingFactors?.totp?.filter(f => f.status !== "verified") || [];
-      
-      for (const factor of unverifiedFactors) {
-        await supabase.auth.mfa.unenroll({ factorId: factor.id });
+      const toRemove = existingFactors?.totp?.filter((f) => f.status !== "verified") || [];
+      for (const f of toRemove) {
+        await supabase.auth.mfa.unenroll({ factorId: f.id });
       }
 
-      const { data, error } = await supabase.auth.mfa.enroll({
-        factorType: "totp",
-      });
+      const tryEnroll = async () => {
+        const { data, error } = await supabase.auth.mfa.enroll({
+          factorType: "totp",
+          friendlyName: `Authenticator ${Date.now()}`,
+        });
+        return { data, error };
+      };
+
+      let { data, error } = await tryEnroll();
+
+      // If friendly name conflict persists, attempt one more cleanup and retry
+      if (error && String(error.message || "").toLowerCase().includes("friendly name")) {
+        const { data: factorsAfter } = await supabase.auth.mfa.listFactors();
+        const leftovers = factorsAfter?.totp?.filter((f) => f.status !== "verified") || [];
+        for (const f of leftovers) {
+          await supabase.auth.mfa.unenroll({ factorId: f.id });
+        }
+        ({ data, error } = await tryEnroll());
+      }
 
       if (error) throw error;
 
@@ -70,7 +85,11 @@ export const TwoFactorAuth = ({ userId }: TwoFactorAuthProps) => {
         setShowSetupDialog(true);
       }
     } catch (error: any) {
-      toast.error("Failed to enable 2FA: " + error.message);
+      toast.error(
+        error?.message?.includes("friendly name")
+          ? "2FA setup conflict. Removing stale attempts—please try again."
+          : "Failed to enable 2FA: " + error.message
+      );
     } finally {
       setSetupLoading(false);
     }
