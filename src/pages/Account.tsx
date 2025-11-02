@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { UserProfile } from "@/components/UserProfile";
-import { TwoFactorAuth } from "@/components/TwoFactorAuth";
 
 const Account = () => {
   const navigate = useNavigate();
@@ -53,8 +52,6 @@ const Account = () => {
       </div>
 
       <UserProfile userId={user?.id} isSupport={isSupport} isAdmin={isAdmin} />
-      
-      <TwoFactorAuth userId={user?.id} />
     </div>
   );
 };
