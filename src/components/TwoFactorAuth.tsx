@@ -23,6 +23,7 @@ export const TwoFactorAuth = ({ userId }: TwoFactorAuthProps) => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [showSetupDialog, setShowSetupDialog] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [qrSvg, setQrSvg] = useState("");
   const [secret, setSecret] = useState("");
   const [otpauthUrl, setOtpauthUrl] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
@@ -77,9 +78,11 @@ export const TwoFactorAuth = ({ userId }: TwoFactorAuthProps) => {
       if (error) throw error;
 
       if (data) {
+        console.log("2FA enrollment successful:", data.totp);
         const svgQRCode = data.totp.qr_code;
         const url = `data:image/svg+xml;utf8,${encodeURIComponent(svgQRCode)}`;
         setQrCodeUrl(url);
+        setQrSvg(svgQRCode);
         setSecret(data.totp.secret);
         setOtpauthUrl(data.totp.uri);
         setShowSetupDialog(true);
@@ -121,6 +124,7 @@ export const TwoFactorAuth = ({ userId }: TwoFactorAuthProps) => {
       setShowSetupDialog(false);
       setVerificationCode("");
       setQrCodeUrl("");
+      setQrSvg("");
       setSecret("");
       setOtpauthUrl("");
     } catch (error: any) {
@@ -223,9 +227,13 @@ export const TwoFactorAuth = ({ userId }: TwoFactorAuthProps) => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-              {qrCodeUrl && (
+              {(qrSvg || qrCodeUrl) && (
                 <div className="flex flex-col items-center gap-4">
-                  <img src={qrCodeUrl} alt="QR Code" className="w-64 h-64" />
+                  {qrSvg ? (
+                    <div className="w-64 h-64 [&>svg]:w-full [&>svg]:h-full" dangerouslySetInnerHTML={{ __html: qrSvg }} />
+                  ) : (
+                    <img src={qrCodeUrl} alt="Authenticator QR code for 2FA" className="w-64 h-64" />
+                  )}
                   <div className="w-full space-y-2">
                     <p className="text-sm text-muted-foreground text-center">
                       Or enter this code manually:
@@ -270,6 +278,7 @@ export const TwoFactorAuth = ({ userId }: TwoFactorAuthProps) => {
                   setShowSetupDialog(false);
                   setVerificationCode("");
                   setQrCodeUrl("");
+                  setQrSvg("");
                   setSecret("");
                   setOtpauthUrl("");
                 }}
