@@ -29,6 +29,22 @@ export const TwoFactorAuth = ({ userId }: TwoFactorAuthProps) => {
   const [verificationCode, setVerificationCode] = useState("");
   const [setupLoading, setSetupLoading] = useState(false);
 
+  // Ensure QR SVG is readable on dark backgrounds by injecting a white background
+  const normalizeQrSvg = (svg: string) => {
+    try {
+      let out = svg;
+      if (!/\<rect[^>]*fill=("|')white\1/.test(out)) {
+        out = out.replace(/<svg([^>]*)>/, '<svg$1><rect width="100%" height="100%" fill="white"/>');
+      }
+      if (!/shape-rendering=/.test(out)) {
+        out = out.replace(/<svg([^>]*)>/, '<svg$1 shape-rendering="crispEdges">');
+      }
+      return out;
+    } catch {
+      return svg;
+    }
+  };
+
   useEffect(() => {
     checkMFAStatus();
   }, [userId]);
@@ -79,7 +95,8 @@ export const TwoFactorAuth = ({ userId }: TwoFactorAuthProps) => {
 
       if (data) {
         console.log("2FA enrollment successful:", data.totp);
-        const svgQRCode = data.totp.qr_code;
+        const rawSvg = data.totp.qr_code;
+        const svgQRCode = normalizeQrSvg(rawSvg);
         const url = `data:image/svg+xml;utf8,${encodeURIComponent(svgQRCode)}`;
         setQrCodeUrl(url);
         setQrSvg(svgQRCode);
