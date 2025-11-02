@@ -51,17 +51,16 @@ export function AppSidebar() {
                       className={`
                         rounded-xl transition-all duration-200 hover:bg-primary/10
                         ${isActive ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-muted-foreground hover:text-foreground'}
-                        ${collapsed ? 'justify-center w-full' : 'justify-start'}
                       `}
                       tooltip={collapsed ? item.title : undefined}
                     >
                       {item.external ? (
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className={`flex items-center w-full ${collapsed ? 'justify-center py-3 px-3' : 'gap-3 px-4 py-3'}`}>
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className={`flex items-center w-full ${collapsed ? 'justify-center py-3' : 'gap-3 px-4 py-3'}`}>
                           <item.icon className="h-5 w-5 flex-shrink-0" />
                           {!collapsed && <span className="font-medium">{item.title}</span>}
                         </a>
                       ) : (
-                        <NavLink to={item.url} end className={`flex items-center w-full ${collapsed ? 'justify-center py-3 px-3' : 'gap-3 px-4 py-3'}`}>
+                        <NavLink to={item.url} end className={`flex items-center w-full ${collapsed ? 'justify-center py-3' : 'gap-3 px-4 py-3'}`}>
                           <item.icon className="h-5 w-5 flex-shrink-0" />
                           {!collapsed && <span className="font-medium">{item.title}</span>}
                         </NavLink>
@@ -77,11 +76,10 @@ export function AppSidebar() {
                     asChild
                     className={`
                       rounded-xl transition-all duration-200 hover:bg-destructive/10 text-muted-foreground hover:text-destructive
-                      ${collapsed ? 'justify-center w-full' : 'justify-start'}
                     `}
                     tooltip={collapsed ? "Logout" : undefined}
                   >
-                    <button onClick={handleLogout} className={`flex items-center w-full ${collapsed ? 'justify-center py-3 px-3' : 'gap-3 px-4 py-3'}`}>
+                    <button onClick={handleLogout} className={`flex items-center w-full ${collapsed ? 'justify-center py-3' : 'gap-3 px-4 py-3'}`}>
                       <LogOut className="h-5 w-5 flex-shrink-0" />
                       {!collapsed && <span className="font-medium">Logout</span>}
                     </button>
