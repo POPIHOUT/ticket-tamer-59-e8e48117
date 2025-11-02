@@ -39,6 +39,22 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r-0">
       <SidebarContent className="bg-[#0a0d1a]/95 backdrop-blur-xl border-r border-white/5">
+        {/* Logo Section */}
+        <div className={`p-4 border-b border-white/5 flex items-center justify-center transition-all duration-200 ${collapsed ? 'py-6' : 'py-4'}`}>
+          {collapsed ? (
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30">
+              <span className="text-xl font-bold text-primary-foreground">H</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30">
+                <span className="text-xl font-bold text-primary-foreground">H</span>
+              </div>
+              <span className="font-bold text-xl text-foreground">HotHost</span>
+            </div>
+          )}
+        </div>
+
         <SidebarGroup className="pt-4">
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1 px-3">
@@ -51,17 +67,17 @@ export function AppSidebar() {
                       className={`
                         rounded-xl transition-all duration-200 hover:bg-primary/10
                         ${isActive ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-muted-foreground hover:text-foreground'}
-                        ${collapsed ? 'justify-center' : 'justify-start'}
+                        ${collapsed ? 'justify-center px-3 py-3' : 'justify-start px-4 py-3'}
                       `}
                       tooltip={item.title}
                     >
                       {item.external ? (
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-3 w-full">
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 w-full">
                           <item.icon className="h-5 w-5 flex-shrink-0" />
                           {!collapsed && <span className="font-medium">{item.title}</span>}
                         </a>
                       ) : (
-                        <NavLink to={item.url} end className="flex items-center gap-3 px-4 py-3 w-full">
+                        <NavLink to={item.url} end className="flex items-center gap-3 w-full">
                           <item.icon className="h-5 w-5 flex-shrink-0" />
                           {!collapsed && <span className="font-medium">{item.title}</span>}
                         </NavLink>
@@ -77,11 +93,11 @@ export function AppSidebar() {
                     asChild
                     className={`
                       rounded-xl transition-all duration-200 hover:bg-destructive/10 text-muted-foreground hover:text-destructive
-                      ${collapsed ? 'justify-center' : 'justify-start'}
+                      ${collapsed ? 'justify-center px-3 py-3' : 'justify-start px-4 py-3'}
                     `}
                     tooltip="Logout"
                   >
-                    <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 w-full">
+                    <button onClick={handleLogout} className="flex items-center gap-3 w-full">
                       <LogOut className="h-5 w-5 flex-shrink-0" />
                       {!collapsed && <span className="font-medium">Logout</span>}
                     </button>
