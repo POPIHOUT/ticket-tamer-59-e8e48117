@@ -24,6 +24,7 @@ export const TwoFactorAuth = ({ userId }: TwoFactorAuthProps) => {
   const [showSetupDialog, setShowSetupDialog] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [secret, setSecret] = useState("");
+  const [otpauthUrl, setOtpauthUrl] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [setupLoading, setSetupLoading] = useState(false);
 
@@ -53,15 +54,11 @@ export const TwoFactorAuth = ({ userId }: TwoFactorAuthProps) => {
       if (error) throw error;
 
       if (data) {
-        // Use the SVG QR code directly from Supabase
         const svgQRCode = data.totp.qr_code;
-        
-        // Convert SVG string to data URL
-        const blob = new Blob([svgQRCode], { type: 'image/svg+xml' });
-        const url = URL.createObjectURL(blob);
-        
+        const url = `data:image/svg+xml;utf8,${encodeURIComponent(svgQRCode)}`;
         setQrCodeUrl(url);
         setSecret(data.totp.secret);
+        setOtpauthUrl(data.totp.uri);
         setShowSetupDialog(true);
       }
     } catch (error: any) {
@@ -98,6 +95,7 @@ export const TwoFactorAuth = ({ userId }: TwoFactorAuthProps) => {
       setVerificationCode("");
       setQrCodeUrl("");
       setSecret("");
+      setOtpauthUrl("");
     } catch (error: any) {
       toast.error("Invalid verification code");
     } finally {
@@ -198,19 +196,30 @@ export const TwoFactorAuth = ({ userId }: TwoFactorAuthProps) => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {qrCodeUrl && (
-              <div className="flex flex-col items-center gap-4">
-                <img src={qrCodeUrl} alt="QR Code" className="w-64 h-64" />
-                <div className="w-full space-y-2">
-                  <p className="text-sm text-muted-foreground text-center">
-                    Or enter this code manually:
-                  </p>
-                  <div className="bg-muted p-3 rounded-lg">
-                    <code className="text-sm font-mono break-all">{secret}</code>
+              {qrCodeUrl && (
+                <div className="flex flex-col items-center gap-4">
+                  <img src={qrCodeUrl} alt="QR Code" className="w-64 h-64" />
+                  <div className="w-full space-y-2">
+                    <p className="text-sm text-muted-foreground text-center">
+                      Or enter this code manually:
+                    </p>
+                    <div className="bg-muted p-3 rounded-lg">
+                      <code className="text-sm font-mono break-all">{secret}</code>
+                    </div>
                   </div>
+
+                  {otpauthUrl && (
+                    <div className="w-full space-y-2">
+                      <p className="text-sm text-muted-foreground text-center">
+                        If scanning fails, use this setup link:
+                      </p>
+                      <div className="bg-muted p-3 rounded-lg break-all text-center">
+                        <a href={otpauthUrl}>{otpauthUrl}</a>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              )}
 
             <div className="space-y-2">
               <Label htmlFor="verification-code">Verification Code</Label>
@@ -235,6 +244,7 @@ export const TwoFactorAuth = ({ userId }: TwoFactorAuthProps) => {
                   setVerificationCode("");
                   setQrCodeUrl("");
                   setSecret("");
+                  setOtpauthUrl("");
                 }}
                 className="flex-1"
               >
