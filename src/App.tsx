@@ -7,6 +7,7 @@ import { Layout } from "./components/Layout";
 import Auth from "./pages/Auth";
 import Support from "./pages/Support";
 import Conversation from "./pages/Conversation";
+import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,14 @@ const App = () => (
             element={
               <Layout>
                 <Conversation />
+              </Layout>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <Layout>
+                <Account />
               </Layout>
             }
           />
