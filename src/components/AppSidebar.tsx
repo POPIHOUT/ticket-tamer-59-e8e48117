@@ -1,4 +1,4 @@
-import { Home, User, LogOut, TicketIcon, Globe, MessageCircle } from "lucide-react";
+import { Home, User, LogOut, Headphones, CreditCard, Activity } from "lucide-react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,12 +14,10 @@ import {
 } from "@/components/ui/sidebar";
 
 const navigationItems = [
-  { title: "Home", url: "/support", icon: Home, isExternal: false },
-];
-
-const externalItems = [
-  { title: "Dashboard", url: "https://dash.hothost.org/", icon: Globe },
-  { title: "Discord", url: "https://discord.gg/auwYgPaadT", icon: MessageCircle },
+  { title: "Home", url: "/", icon: Home },
+  { title: "Support", url: "/support", icon: Headphones },
+  { title: "Billing", url: "/billing", icon: CreditCard },
+  { title: "Status", url: "/status", icon: Activity },
 ];
 
 export function AppSidebar() {
@@ -40,63 +38,62 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarContent className="glass-strong border-r border-white/10">
-        <div className={`p-4 border-b border-white/10 flex items-center backdrop-blur-xl ${collapsed ? 'justify-center' : 'gap-3'}`}>
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30">
-            <TicketIcon className="h-5 w-5 text-primary-foreground" />
-          </div>
-          {!collapsed && (
-            <span className="font-bold text-lg text-sidebar-foreground">Support</span>
-          )}
-        </div>
-
-        <SidebarGroup className="mt-4">
+    <Sidebar collapsible="icon" className="border-r-0">
+      <SidebarContent className="bg-[#0a0d1a]/95 backdrop-blur-xl border-r border-white/5">
+        <SidebarGroup className="pt-4">
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-2">
-              {navigationItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={currentPath === item.url}
-                    className={`glass hover:glass-strong ${collapsed ? 'justify-center' : ''}`}
-                    tooltip={item.title}
-                  >
-                    <NavLink to={item.url} end className="flex items-center w-full">
-                      <item.icon className="h-5 w-5 flex-shrink-0" />
-                      {!collapsed && <span className="ml-2 font-medium">{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-
-              <div className="pt-2 mt-2 border-t border-white/10">
-                {externalItems.map((item) => (
+            <SidebarMenu className="space-y-1 px-3">
+              {navigationItems.map((item) => {
+                const isActive = currentPath === item.url;
+                return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       asChild
-                      className={`glass hover:glass-strong ${collapsed ? 'justify-center' : ''}`}
+                      className={`
+                        rounded-xl transition-all duration-200 hover:bg-primary/10
+                        ${isActive ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-muted-foreground hover:text-foreground'}
+                        ${collapsed ? 'justify-center' : 'justify-start'}
+                      `}
                       tooltip={item.title}
                     >
-                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-center w-full">
+                      <NavLink to={item.url} end className="flex items-center gap-3 px-4 py-3 w-full">
                         <item.icon className="h-5 w-5 flex-shrink-0" />
-                        {!collapsed && <span className="ml-2 font-medium">{item.title}</span>}
-                      </a>
+                        {!collapsed && <span className="font-medium">{item.title}</span>}
+                      </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                ))}
-              </div>
+                );
+              })}
 
-              <div className="pt-4 mt-4 border-t border-white/10">
+              <div className="pt-4 mt-4 border-t border-white/5">
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
-                    className={`glass hover:glass-strong hover:bg-destructive/20 text-destructive ${collapsed ? 'justify-center' : ''}`}
+                    className={`
+                      rounded-xl transition-all duration-200 hover:bg-muted/50 text-muted-foreground hover:text-foreground
+                      ${collapsed ? 'justify-center' : 'justify-start'}
+                    `}
+                    tooltip="Account"
+                  >
+                    <NavLink to="/account" className="flex items-center gap-3 px-4 py-3 w-full">
+                      <User className="h-5 w-5 flex-shrink-0" />
+                      {!collapsed && <span className="font-medium">Account</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    className={`
+                      rounded-xl transition-all duration-200 hover:bg-destructive/10 text-muted-foreground hover:text-destructive
+                      ${collapsed ? 'justify-center' : 'justify-start'}
+                    `}
                     tooltip="Logout"
                   >
-                    <button onClick={handleLogout} className="flex items-center w-full">
+                    <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 w-full">
                       <LogOut className="h-5 w-5 flex-shrink-0" />
-                      {!collapsed && <span className="ml-2 font-medium">Logout</span>}
+                      {!collapsed && <span className="font-medium">Logout</span>}
                     </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
