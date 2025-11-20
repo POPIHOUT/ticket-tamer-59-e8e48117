@@ -7,16 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { UserProfileDialog } from "@/components/UserProfileDialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { RatingDialog } from "@/components/RatingDialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ArrowLeft, Send, Loader2 } from "lucide-react";
+import { ArrowLeft, Send, Loader2, UserPlus, X, Bot } from "lucide-react";
 import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
 
@@ -39,10 +35,17 @@ interface Message {
   user_id: string;
   message: string;
   created_at: string;
+  is_bot: boolean;
   profiles: {
     nickname: string | null;
     is_support: boolean;
   };
+}
+
+interface SupportUser {
+  id: string;
+  nickname: string | null;
+  is_support: boolean;
 }
 
 const Conversation = () => {
@@ -60,6 +63,14 @@ const Conversation = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+  const [isTakenOver, setIsTakenOver] = useState(false);
+  const [supportUsers, setSupportUsers] = useState<SupportUser[]>([]);
+  const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
+  const [selectedTransferUser, setSelectedTransferUser] = useState<string>("");
+  const [isRatingDialogOpen, setIsRatingDialogOpen] = useState(false);
+  const [botTyping, setBotTyping] = useState(false);
+
+  const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/hothost-ai-chat`;
 
   useEffect(() => {
     const getUser = async () => {
@@ -70,7 +81,6 @@ const Conversation = () => {
       }
       setUser(user);
 
-      // Fetch user role
       const { data: profile } = await supabase
         .from("profiles")
         .select("is_support, is_admin")
@@ -90,6 +100,7 @@ const Conversation = () => {
 
     fetchTicket();
     fetchMessages();
+    checkTakeoverStatus();
 
     const messagesChannel = supabase
       .channel(`conversation-${ticketId}`)
@@ -102,7 +113,6 @@ const Conversation = () => {
           filter: `ticket_id=eq.${ticketId}`,
         },
         async (payload) => {
-          // Fetch the full message with profile data
           const { data: newMessage } = await supabase
             .from("messages")
             .select(`
@@ -138,15 +148,59 @@ const Conversation = () => {
       )
       .subscribe();
 
+    const assignmentsChannel = supabase
+      .channel(`assignments-${ticketId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "ticket_assignments",
+          filter: `ticket_id=eq.${ticketId}`,
+        },
+        () => {
+          checkTakeoverStatus();
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(ticketsChannel);
+      supabase.removeChannel(assignmentsChannel);
     };
   }, [ticketId, user]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    if (isSupport || isAdmin) {
+      fetchSupportUsers();
+    }
+  }, [isSupport, isAdmin]);
+
+  const checkTakeoverStatus = async () => {
+    const { data } = await supabase
+      .from("ticket_assignments")
+      .select("*")
+      .eq("ticket_id", ticketId)
+      .maybeSingle();
+
+    setIsTakenOver(!!data);
+  };
+
+  const fetchSupportUsers = async () => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, nickname, is_support")
+      .eq("is_support", true);
+
+    if (data) {
+      setSupportUsers(data);
+    }
+  };
 
   const fetchTicket = async () => {
     const { data, error } = await supabase
@@ -195,6 +249,95 @@ const Conversation = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const sendBotMessage = async (userMessage: string) => {
+    if (isTakenOver || ticket?.priority === 'urgent') return;
+
+    setBotTyping(true);
+
+    try {
+      const conversationHistory = messages.map(msg => ({
+        role: msg.is_bot ? "assistant" : "user",
+        content: msg.message
+      }));
+
+      conversationHistory.push({
+        role: "user",
+        content: userMessage
+      });
+
+      const response = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          messages: conversationHistory,
+          ticketId: ticketId,
+          userId: user?.id
+        }),
+      });
+
+      if (!response.ok || !response.body) {
+        throw new Error("Failed to get AI response");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = "";
+      let streamDone = false;
+      let assistantMessage = "";
+
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") {
+            streamDone = true;
+            break;
+          }
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantMessage += content;
+            }
+          } catch (e) {
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
+        }
+      }
+
+      if (assistantMessage && !assistantMessage.includes('"action": "escalate"')) {
+        await supabase.from("messages").insert({
+          ticket_id: ticketId,
+          user_id: user!.id,
+          message: assistantMessage,
+          is_bot: true,
+        });
+      }
+
+    } catch (error) {
+      console.error("Bot error:", error);
+    } finally {
+      setBotTyping(false);
+    }
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !user || !ticketId) return;
@@ -202,21 +345,131 @@ const Conversation = () => {
     setIsSending(true);
 
     try {
+      const messageText = newMessage.trim();
       const { error } = await supabase.from("messages").insert({
         ticket_id: ticketId,
         user_id: user.id,
-        message: newMessage.trim(),
+        message: messageText,
+        is_bot: false,
       });
 
       if (error) throw error;
 
       setNewMessage("");
-      // No need to fetch - realtime will update automatically
+
+      // Send to bot if not taken over and not urgent
+      if (!isTakenOver && ticket?.priority !== 'urgent') {
+        setTimeout(() => sendBotMessage(messageText), 500);
+      }
     } catch (error: any) {
       toast.error("Error sending message");
       console.error(error);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleTakeOver = async () => {
+    if (!user || !ticketId) return;
+
+    try {
+      const { error } = await supabase
+        .from("ticket_assignments")
+        .insert({
+          ticket_id: ticketId,
+          support_user_id: user.id,
+        });
+
+      if (error) throw error;
+
+      // Get user's nickname
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("nickname")
+        .eq("id", user.id)
+        .single();
+
+      // Send system message
+      await supabase.from("messages").insert({
+        ticket_id: ticketId,
+        user_id: user.id,
+        message: `${profile?.nickname || 'Support'} has joined the chat.`,
+        is_bot: true,
+      });
+
+      toast.success("Ticket taken over");
+      setIsTakenOver(true);
+    } catch (error: any) {
+      toast.error("Error taking over ticket");
+      console.error(error);
+    }
+  };
+
+  const handleTransfer = async () => {
+    if (!selectedTransferUser || !ticketId) return;
+
+    try {
+      // Remove current assignment
+      await supabase
+        .from("ticket_assignments")
+        .delete()
+        .eq("ticket_id", ticketId);
+
+      // Add new assignment
+      const { error } = await supabase
+        .from("ticket_assignments")
+        .insert({
+          ticket_id: ticketId,
+          support_user_id: selectedTransferUser,
+        });
+
+      if (error) throw error;
+
+      // Get new user's nickname
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("nickname")
+        .eq("id", selectedTransferUser)
+        .single();
+
+      // Send system message
+      await supabase.from("messages").insert({
+        ticket_id: ticketId,
+        user_id: user!.id,
+        message: `Ticket has been transferred to ${profile?.nickname || 'another agent'}.`,
+        is_bot: true,
+      });
+
+      toast.success("Ticket transferred");
+      setIsTransferDialogOpen(false);
+      setSelectedTransferUser("");
+    } catch (error: any) {
+      toast.error("Error transferring ticket");
+      console.error(error);
+    }
+  };
+
+  const handleClose = async () => {
+    try {
+      const { error } = await supabase
+        .from("tickets")
+        .update({
+          status: "closed",
+          closed_at: new Date().toISOString(),
+        })
+        .eq("id", ticketId);
+
+      if (error) throw error;
+
+      toast.success("Ticket closed");
+      
+      // Show rating dialog for customers
+      if (!isSupport && !isAdmin) {
+        setTimeout(() => setIsRatingDialogOpen(true), 500);
+      }
+    } catch (error: any) {
+      toast.error("Error closing ticket");
+      console.error(error);
     }
   };
 
@@ -237,7 +490,6 @@ const Conversation = () => {
       if (error) throw error;
 
       toast.success("Status updated");
-      // No need to fetch - realtime will update automatically
     } catch (error: any) {
       toast.error("Error updating status");
       console.error(error);
@@ -325,9 +577,6 @@ const Conversation = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="waiting_for_response">Waiting for Response</SelectItem>
                   <SelectItem value="solved">Solved</SelectItem>
                   <SelectItem value="closed">Closed</SelectItem>
                 </SelectContent>
@@ -338,6 +587,30 @@ const Conversation = () => {
             {getPriorityBadge(ticket.priority)}
           </div>
         </div>
+        {(isSupport || isAdmin) && ticket.status !== "closed" && (
+          <div className="flex gap-2">
+            {!isTakenOver && (
+              <Button onClick={handleTakeOver} variant="outline" size="sm">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Take Over
+              </Button>
+            )}
+            {isTakenOver && (
+              <Button onClick={() => setIsTransferDialogOpen(true)} variant="outline" size="sm">
+                Transfer
+              </Button>
+            )}
+            <Button onClick={handleClose} variant="outline" size="sm">
+              <X className="h-4 w-4 mr-2" />
+              Close Ticket
+            </Button>
+          </div>
+        )}
+        {!isSupport && !isAdmin && ticket.status !== "closed" && (
+          <Button onClick={handleClose} variant="outline" size="sm">
+            Close Ticket
+          </Button>
+        )}
       </div>
 
       <div className="max-w-4xl">
@@ -374,8 +647,9 @@ const Conversation = () => {
                 </div>
               ) : (
                 messages.map((message) => {
-                  const isCurrentUser = message.user_id === user?.id;
-                  const isSupportMessage = message.profiles?.is_support;
+                  const isCurrentUser = message.user_id === user?.id && !message.is_bot;
+                  const isSupportMessage = message.profiles?.is_support && !message.is_bot;
+                  const isBotMessage = message.is_bot;
 
                   return (
                     <div
@@ -391,10 +665,21 @@ const Conversation = () => {
                       >
                         <div className="flex items-start gap-2 mb-2">
                           <div className="flex-1">
+                            {isBotMessage && (
+                              <div className="flex items-center gap-2 mb-1">
+                                <Badge variant="secondary" className="text-xs">
+                                  <Bot className="h-3 w-3 mr-1" />
+                                  BOT
+                                </Badge>
+                                <span className="text-xs font-medium">
+                                  HotHost.org
+                                </span>
+                              </div>
+                            )}
                             {isSupportMessage && (
                               <div className="flex items-center gap-2 mb-1">
                                 <Badge variant="default" className="text-xs">
-                                  Podpora
+                                  Support
                                 </Badge>
                                 <button
                                   onClick={() => {
@@ -413,7 +698,7 @@ const Conversation = () => {
                                 </button>
                               </div>
                             )}
-                            {!isSupportMessage && (
+                            {!isBotMessage && !isSupportMessage && !isCurrentUser && (
                               <button
                                 onClick={() => {
                                   if (isSupport || isAdmin) {
@@ -444,6 +729,20 @@ const Conversation = () => {
                     </div>
                   );
                 })
+              )}
+              {botTyping && (
+                <div className="flex justify-start">
+                  <div className="max-w-[70%] rounded-lg px-4 py-3 bg-card border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="secondary" className="text-xs">
+                        <Bot className="h-3 w-3 mr-1" />
+                        BOT
+                      </Badge>
+                      <span className="text-xs font-medium">HotHost.org</span>
+                    </div>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                </div>
               )}
               <div ref={messagesEndRef} />
             </div>
@@ -531,6 +830,59 @@ const Conversation = () => {
           open={isProfileDialogOpen}
           onOpenChange={setIsProfileDialogOpen}
         />
+
+        <RatingDialog
+          ticketId={ticketId!}
+          open={isRatingDialogOpen}
+          onOpenChange={setIsRatingDialogOpen}
+        />
+
+        <Dialog open={isTransferDialogOpen} onOpenChange={setIsTransferDialogOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Transfer Ticket</DialogTitle>
+              <DialogDescription>
+                Select a support agent to transfer this ticket to.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Support Agent</Label>
+                <Select value={selectedTransferUser} onValueChange={setSelectedTransferUser}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an agent" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {supportUsers
+                      .filter(u => u.id !== user?.id)
+                      .map((supportUser) => (
+                        <SelectItem key={supportUser.id} value={supportUser.id}>
+                          {supportUser.nickname || "Unknown"}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsTransferDialogOpen(false);
+                    setSelectedTransferUser("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleTransfer}
+                  disabled={!selectedTransferUser}
+                >
+                  Transfer
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

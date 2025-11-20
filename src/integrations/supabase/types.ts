@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          is_bot: boolean | null
           message: string
           ticket_id: string
           user_id: string
@@ -25,6 +26,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          is_bot?: boolean | null
           message: string
           ticket_id: string
           user_id: string
@@ -32,6 +34,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          is_bot?: boolean | null
           message?: string
           ticket_id?: string
           user_id?: string
@@ -88,6 +91,74 @@ export type Database = {
           phone?: string | null
         }
         Relationships: []
+      }
+      ticket_assignments: {
+        Row: {
+          assigned_at: string | null
+          id: string
+          support_user_id: string
+          ticket_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          id?: string
+          support_user_id: string
+          ticket_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          id?: string
+          support_user_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_assignments_support_user_id_fkey"
+            columns: ["support_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_assignments_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_ratings: {
+        Row: {
+          created_at: string | null
+          feedback: string | null
+          id: string
+          rating: number
+          ticket_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          feedback?: string | null
+          id?: string
+          rating: number
+          ticket_id: string
+        }
+        Update: {
+          created_at?: string | null
+          feedback?: string | null
+          id?: string
+          rating?: number
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_ratings_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: true
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tickets: {
         Row: {

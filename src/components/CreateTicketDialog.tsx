@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { AIChatDialog } from "./AIChatDialog";
 
 interface CreateTicketDialogProps {
   userId: string;
@@ -40,8 +39,6 @@ export const CreateTicketDialog = ({
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("medium");
   const [initialMessage, setInitialMessage] = useState("");
-  const [showAIChat, setShowAIChat] = useState(false);
-  const [showTicketForm, setShowTicketForm] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,59 +119,24 @@ export const CreateTicketDialog = ({
     setDescription("");
     setPriority("medium");
     setInitialMessage("");
-    setShowAIChat(false);
-    setShowTicketForm(false);
   };
 
   const handleOpenChange = (newOpen: boolean) => {
-    if (newOpen) {
-      // When opening, show AI chat first
-      setShowAIChat(true);
-      setShowTicketForm(false);
-    } else {
-      // When closing, reset everything
+    if (!newOpen) {
       resetForm();
     }
     onOpenChange(newOpen);
   };
 
-  const handleEscalateToTicket = () => {
-    setShowAIChat(false);
-    setShowTicketForm(true);
-  };
-
-  // Update open state based on dialog changes
-  if (open && !showAIChat && !showTicketForm) {
-    setShowAIChat(true);
-  }
-
   return (
-    <>
-      <AIChatDialog
-        open={showAIChat}
-        onOpenChange={(newOpen) => {
-          setShowAIChat(newOpen);
-          if (!newOpen && !showTicketForm) {
-            onOpenChange(false);
-          }
-        }}
-        onEscalate={handleEscalateToTicket}
-      />
-
-      <Dialog open={showTicketForm} onOpenChange={(newOpen) => {
-        setShowTicketForm(newOpen);
-        if (!newOpen) {
-          resetForm();
-          onOpenChange(false);
-        }
-      }}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Create Support Ticket</DialogTitle>
-            <DialogDescription>
-              Our AI agent couldn't resolve your issue. Let's create a ticket for our support team.
-            </DialogDescription>
-          </DialogHeader>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Create Support Ticket</DialogTitle>
+          <DialogDescription>
+            Fill in the details below to create a support ticket. Our team will respond as soon as possible.
+          </DialogDescription>
+        </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>
@@ -232,10 +194,7 @@ export const CreateTicketDialog = ({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  setShowTicketForm(false);
-                  onOpenChange(false);
-                }}
+                onClick={() => handleOpenChange(false)}
                 disabled={isLoading}
               >
                 Cancel
@@ -254,6 +213,5 @@ export const CreateTicketDialog = ({
           </form>
         </DialogContent>
       </Dialog>
-    </>
   );
 };
