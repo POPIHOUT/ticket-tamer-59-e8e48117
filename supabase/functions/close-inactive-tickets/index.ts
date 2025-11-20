@@ -25,31 +25,35 @@ const handler = async (req: Request): Promise<Response> => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Calculate the date 15 days ago
-    const fifteenDaysAgo = new Date();
-    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+    // Calculate the date 10 days ago
+    const tenDaysAgo = new Date();
+    tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
 
-    console.log("Checking for inactive tickets older than:", fifteenDaysAgo.toISOString());
+    console.log("Checking for inactive tickets older than:", tenDaysAgo.toISOString());
 
-    // Find tickets that haven't been updated in 15 days and are not already closed
+    // Find tickets that:
+    // 1. Status is 'waiting_for_response'
+    // 2. Haven't been updated in 10 days
+    // 3. Priority is NOT 'urgent'
     const { data: inactiveTickets, error: fetchError } = await supabase
       .from("tickets")
-      .select("id, title, updated_at")
-      .neq("status", "closed")
-      .lt("updated_at", fifteenDaysAgo.toISOString());
+      .select("id, title, updated_at, priority")
+      .eq("status", "waiting_for_response")
+      .neq("priority", "urgent")
+      .lt("updated_at", tenDaysAgo.toISOString());
 
     if (fetchError) {
       console.error("Error fetching inactive tickets:", fetchError);
       throw fetchError;
     }
 
-    console.log(`Found ${inactiveTickets?.length || 0} inactive tickets`);
+    console.log(`Found ${inactiveTickets?.length || 0} inactive tickets (waiting_for_response, non-urgent)`);
 
     if (!inactiveTickets || inactiveTickets.length === 0) {
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: "No inactive tickets to close",
+          message: "No inactive tickets to close (checking waiting_for_response, non-urgent only)",
           closedCount: 0
         }),
         {

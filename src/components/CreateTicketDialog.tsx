@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { AIChatDialog } from "./AIChatDialog";
 
 interface CreateTicketDialogProps {
   userId: string;
@@ -39,6 +40,8 @@ export const CreateTicketDialog = ({
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("medium");
   const [initialMessage, setInitialMessage] = useState("");
+  const [showAIChat, setShowAIChat] = useState(false);
+  const [showTicketForm, setShowTicketForm] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,11 +104,7 @@ export const CreateTicketDialog = ({
       }
 
       toast.success("Ticket created!");
-      setTitle("");
-      setDescription("");
-      setPriority("medium");
-      setInitialMessage("");
-      onOpenChange(false);
+      resetForm();
       
       if (data && onTicketCreated) {
         onTicketCreated(data.id);
@@ -118,90 +117,143 @@ export const CreateTicketDialog = ({
     }
   };
 
+  const resetForm = () => {
+    setTitle("");
+    setDescription("");
+    setPriority("medium");
+    setInitialMessage("");
+    setShowAIChat(false);
+    setShowTicketForm(false);
+  };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      // When opening, show AI chat first
+      setShowAIChat(true);
+      setShowTicketForm(false);
+    } else {
+      // When closing, reset everything
+      resetForm();
+    }
+    onOpenChange(newOpen);
+  };
+
+  const handleEscalateToTicket = () => {
+    setShowAIChat(false);
+    setShowTicketForm(true);
+  };
+
+  // Update open state based on dialog changes
+  if (open && !showAIChat && !showTicketForm) {
+    setShowAIChat(true);
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Create New Ticket</DialogTitle>
-          <DialogDescription>
-            Describe your issue or request
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              placeholder="Brief description of the issue"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              disabled={isLoading}
-            />
-          </div>
+    <>
+      <AIChatDialog
+        open={showAIChat}
+        onOpenChange={(newOpen) => {
+          setShowAIChat(newOpen);
+          if (!newOpen && !showTicketForm) {
+            onOpenChange(false);
+          }
+        }}
+        onEscalate={handleEscalateToTicket}
+      />
 
-          <div className="space-y-2">
-            <Label htmlFor="priority">Priority</Label>
-            <Select value={priority} onValueChange={setPriority} disabled={isLoading}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="urgent">Urgent</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      <Dialog open={showTicketForm} onOpenChange={(newOpen) => {
+        setShowTicketForm(newOpen);
+        if (!newOpen) {
+          resetForm();
+          onOpenChange(false);
+        }
+      }}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create Support Ticket</DialogTitle>
+            <DialogDescription>
+              Our AI agent couldn't resolve your issue. Let's create a ticket for our support team.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                placeholder="Brief description of the issue"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              placeholder="Detailed description of the issue..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-              disabled={isLoading}
-              rows={4}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="priority">Priority</Label>
+              <Select value={priority} onValueChange={setPriority} disabled={isLoading}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="urgent">Urgent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="initialMessage">Initial Message (Optional)</Label>
-            <Textarea
-              id="initialMessage"
-              placeholder="Add your first message here..."
-              value={initialMessage}
-              onChange={(e) => setInitialMessage(e.target.value)}
-              disabled={isLoading}
-              rows={3}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Detailed description of the issue..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+                disabled={isLoading}
+                rows={4}
+              />
+            </div>
 
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                "Create Ticket"
-              )}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <div className="space-y-2">
+              <Label htmlFor="initialMessage">Initial Message (Optional)</Label>
+              <Textarea
+                id="initialMessage"
+                placeholder="Add your first message here..."
+                value={initialMessage}
+                onChange={(e) => setInitialMessage(e.target.value)}
+                disabled={isLoading}
+                rows={3}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowTicketForm(false);
+                  onOpenChange(false);
+                }}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create Ticket"
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };

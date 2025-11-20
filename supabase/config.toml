@@ -1,1 +1,10 @@
 project_id = "jxkiyamkpxptcyodznhe"
+
+[functions.send-ticket-email]
+verify_jwt = false
+
+[functions.close-inactive-tickets]
+verify_jwt = false
+
+[functions.hothost-ai-chat]
+verify_jwt = false
