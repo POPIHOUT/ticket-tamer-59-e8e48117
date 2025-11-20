@@ -8,6 +8,7 @@ import Auth from "./pages/Auth";
 import Support from "./pages/Support";
 import Conversation from "./pages/Conversation";
 import Account from "./pages/Account";
+import Surveys from "./pages/Surveys";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,14 @@ const App = () => (
             element={
               <Layout>
                 <Account />
+              </Layout>
+            }
+          />
+          <Route
+            path="/surveys"
+            element={
+              <Layout>
+                <Surveys />
               </Layout>
             }
           />

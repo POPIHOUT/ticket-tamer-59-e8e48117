@@ -1,7 +1,8 @@
-import { Home, User, LogOut, Activity } from "lucide-react";
+import { Home, User, LogOut, Activity, Star } from "lucide-react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,7 +14,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const navigationItems = [
+const baseNavigationItems = [
   { title: "Home", url: "/support", icon: Home },
   { title: "Status", url: "https://status.hothost.org/", icon: Activity, external: true },
   { title: "Account", url: "/account", icon: User },
@@ -25,6 +26,30 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [navigationItems, setNavigationItems] = useState(baseNavigationItems);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", user.id)
+          .single();
+        
+        if (profile?.is_admin) {
+          setIsAdmin(true);
+          setNavigationItems([
+            ...baseNavigationItems,
+            { title: "Surveys", url: "/surveys", icon: Star },
+          ]);
+        }
+      }
+    };
+    checkAdmin();
+  }, []);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
